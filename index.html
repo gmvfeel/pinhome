@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.31 (날짜 자동 + 정책상세 메뉴 정리)</title>
+<title>PinHome · v0.32 (비상용 정책 데이터 서버 동기화)</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2231,7 +2231,7 @@
       <button class="cta-btn" onclick="go('check')">조건 추가하기<i class="ti ti-arrow-right"></i></button>
     </div>
 
-    <div class="footer">PinHome · v0.31 · 오늘 날짜 자동 표시 + 정책상세 메뉴 제거</div>
+    <div class="footer">PinHome · v0.32 · 예비 정책 데이터를 서버 최신값과 일치</div>
   </section>
 
   <!-- ============================================ -->
@@ -3640,366 +3640,981 @@
 <!-- ============================================ -->
 <script>
 window.PinHomePolicies = [
-  // 1. 신혼부부 디딤돌 대출
   {
-    id: 'pol_shinhon_didimdol_2026',
-    title: '신혼부부 디딤돌 대출',
-    short_desc: '혼인 7년 이내 무주택 신혼부부 주택 구입 자금 대출',
-    source_org: '주택도시기금',
-    category: 'loan',
-    official_url: 'https://enhuf.molit.go.kr',
-    as_of: '2026.6',
-    display_amount: {
-      type: 'loan',
-      variants: [
-        { condition: { child_count_min: 2 }, max_value: 320000000, display_text: '신혼·2자녀 이상 최대 3.2억', priority: 10 },
-        { condition: {}, max_value: 240000000, display_text: '신혼 최대 2.4억', priority: 1 },
+    "id": "pol_shinhon_didimdol_2026",
+    "title": "신혼부부 디딤돌 대출",
+    "short_desc": "혼인 7년 이내 무주택 신혼부부 주택 구입 자금 대출",
+    "source_org": "주택도시기금",
+    "category": "loan",
+    "official_url": "https://enhuf.molit.go.kr",
+    "as_of": "2026.6",
+    "display_amount": {
+      "type": "loan",
+      "variants": [
+        {
+          "condition": {
+            "child_count_min": 2
+          },
+          "max_value": 320000000,
+          "display_text": "신혼·2자녀 이상 최대 3.2억",
+          "priority": 10
+        },
+        {
+          "condition": {},
+          "max_value": 240000000,
+          "display_text": "신혼 최대 2.4억",
+          "priority": 1
+        }
       ],
-      default_display: '최대 2.4억원',
+      "default_display": "최대 2.4억원"
     },
-    display_rate: { type: 'interest', min: 1.7, max: 2.75, display_text: '1.7~2.75% (26.6 기준)' },
-    rules: [
-      { id: 'marriage', type: 'marriage', params: { status: 'married', max_years: 7, upcoming_ok: true }, label: '혼인 7년 이내', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 70000000, scope: 'couple' }, label: '부부 합산 7,000만 이하', weight: 9, required: true },
-      { id: 'first_buyer_bonus', type: 'first_buyer', params: { required: false }, label: '생애 첫 주택 (우대)', weight: 3, required: false },
-    ],
-    region: { type: 'any' },
-    bonus_rules: [
-      { id: 'first_buyer', condition: { first_buyer: true }, benefit: { type: 'rate_discount', value: 0.1 }, display_label: '생애최초 -0.1%p' },
-      { id: 'child_1', condition: { child_count_min: 1 }, benefit: { type: 'rate_discount', value: 0.2 }, display_label: '1자녀 -0.2%p' },
-      { id: 'child_2', condition: { child_count_min: 2 }, benefit: { type: 'rate_discount', value: 0.3 }, display_label: '2자녀 -0.3%p' },
-    ],
-  },
-
-  // 2. 버팀목 전세자금
-  {
-    id: 'pol_botim_jeonse_2026',
-    title: '버팀목 전세자금 대출',
-    short_desc: '무주택 세대주를 위한 전세 보증금 대출 (순자산 2.80억 이하)',
-    source_org: '주택도시기금',
-    category: 'rental',
-    official_url: 'https://enhuf.molit.go.kr',
-    as_of: '2026.6',
-    display_amount: {
-      type: 'loan',
-      variants: [
-        { condition: { is_newlywed: true, region: 'metropolitan' }, max_value: 200000000, display_text: '수도권 신혼 최대 2억', priority: 10 },
-        { condition: { is_newlywed: true, region: 'non_metropolitan' }, max_value: 160000000, display_text: '비수도권 신혼 최대 1.6억', priority: 9 },
-        { condition: { region: 'metropolitan' }, max_value: 120000000, display_text: '수도권 일반 최대 1.2억', priority: 5 },
-        { condition: {}, max_value: 80000000, display_text: '비수도권 일반 최대 8천', priority: 1 },
-      ],
-      default_display: '최대 2억원',
+    "display_rate": {
+      "type": "interest",
+      "min": 1.7,
+      "max": 2.75,
+      "display_text": "1.7~2.75% (26.6 기준)"
     },
-    display_rate: { type: 'interest', min: 1.8, max: 2.4, display_text: '1.8~2.4% (26.6 기준)' },
-    rules: [
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
+    "rules": [
       {
-        id: 'income', type: 'income_household', params: { max_annual: 50000000, scope: 'household' },
-        label: '연소득 5천만 이하', weight: 9, required: true,
-        conditional_thresholds: [
-          { when: { is_newlywed: true }, override_params: { max_annual: 75000000, scope: 'couple' }, label: '신혼 7,500만 이하' },
-        ],
+        "id": "marriage",
+        "type": "marriage",
+        "params": {
+          "status": "married",
+          "max_years": 7,
+          "upcoming_ok": true
+        },
+        "label": "혼인 7년 이내",
+        "weight": 10,
+        "required": true
       },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 70000000,
+          "scope": "couple"
+        },
+        "label": "부부 합산 7,000만 이하",
+        "weight": 9,
+        "required": true
+      },
+      {
+        "id": "first_buyer_bonus",
+        "type": "first_buyer",
+        "params": {
+          "required": false
+        },
+        "label": "생애 첫 주택 (우대)",
+        "weight": 3,
+        "required": false
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "bonus_rules": [
+      {
+        "id": "first_buyer",
+        "condition": {
+          "first_buyer": true
+        },
+        "benefit": {
+          "type": "rate_discount",
+          "value": 0.1
+        },
+        "display_label": "생애최초 -0.1%p"
+      },
+      {
+        "id": "child_1",
+        "condition": {
+          "child_count_min": 1
+        },
+        "benefit": {
+          "type": "rate_discount",
+          "value": 0.2
+        },
+        "display_label": "1자녀 -0.2%p"
+      },
+      {
+        "id": "child_2",
+        "condition": {
+          "child_count_min": 2
+        },
+        "benefit": {
+          "type": "rate_discount",
+          "value": 0.3
+        },
+        "display_label": "2자녀 -0.3%p"
+      }
+    ]
   },
-
-  // 3. 신생아 특례 구입자금
   {
-    id: 'pol_shinsenga_2026',
-    title: '신생아 특례 구입자금 대출',
-    short_desc: '2년 이내 출산 가구를 위한 초저금리 주택 구입 대출 (순자산 5.11억 이하)',
-    source_org: '주택도시기금',
-    category: 'loan',
-    official_url: 'https://enhuf.molit.go.kr',
-    as_of: '2026.6',
-    display_amount: {
-      type: 'loan',
-      variants: [{ condition: {}, max_value: 400000000, display_text: '최대 4억', priority: 1 }],
-      default_display: '최대 4억',
+    "id": "pol_botim_jeonse_2026",
+    "title": "버팀목 전세자금 대출",
+    "short_desc": "무주택 세대주를 위한 전세 보증금 대출 (순자산 2.80억 이하)",
+    "source_org": "주택도시기금",
+    "category": "rental",
+    "official_url": "https://enhuf.molit.go.kr",
+    "as_of": "2026.6",
+    "display_amount": {
+      "type": "loan",
+      "variants": [
+        {
+          "condition": {
+            "is_newlywed": true,
+            "region": "metropolitan"
+          },
+          "max_value": 200000000,
+          "display_text": "수도권 신혼 최대 2억",
+          "priority": 10
+        },
+        {
+          "condition": {
+            "is_newlywed": true,
+            "region": "non_metropolitan"
+          },
+          "max_value": 160000000,
+          "display_text": "비수도권 신혼 최대 1.6억",
+          "priority": 9
+        },
+        {
+          "condition": {
+            "region": "metropolitan"
+          },
+          "max_value": 120000000,
+          "display_text": "수도권 일반 최대 1.2억",
+          "priority": 5
+        },
+        {
+          "condition": {},
+          "max_value": 80000000,
+          "display_text": "비수도권 일반 최대 8천",
+          "priority": 1
+        }
+      ],
+      "default_display": "최대 2억원"
     },
-    display_rate: { type: 'interest', min: 1.8, max: 4.5, display_text: '1.8~4.5% (26.6 기준)' },
-    rules: [
-      { id: 'newborn', type: 'children', params: { newborn_within_years: 2, newborn_after_date: '2023-01-01' }, label: '2023.1.1 이후 출산 + 2년 이내', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 200000000, scope: 'household' }, label: '부부 합산 2억 이하', weight: 8, required: true },
+    "display_rate": {
+      "type": "interest",
+      "min": 1.8,
+      "max": 2.4,
+      "display_text": "1.8~2.4% (26.6 기준)"
+    },
+    "rules": [
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 50000000,
+          "scope": "household"
+        },
+        "label": "연소득 5천만 이하",
+        "weight": 9,
+        "required": true,
+        "conditional_thresholds": [
+          {
+            "when": {
+              "is_newlywed": true
+            },
+            "override_params": {
+              "max_annual": 75000000,
+              "scope": "couple"
+            },
+            "label": "신혼 7,500만 이하"
+          }
+        ]
+      }
     ],
-    region: { type: 'any' },
-    bonus_rules: [
-      { id: 'child_1', condition: { child_count_min: 1 }, benefit: { type: 'rate_discount', value: 0.1 }, display_label: '1자녀 -0.1%p' },
-      { id: 'child_2', condition: { child_count_min: 2 }, benefit: { type: 'rate_discount', value: 0.3 }, display_label: '2자녀 -0.3%p' },
-    ],
+    "region": {
+      "type": "any"
+    }
   },
-
-  // 4. 청년 우대형 청약저축
   {
-    id: 'pol_chungnyeon_chungyak_2026',
-    title: '청년 우대형 주택청약저축',
-    short_desc: '청년 무주택자를 위한 고금리 + 비과세 청약저축',
-    source_org: '주택도시기금',
-    category: 'subscription',
-    display_amount: {
-      type: 'tax_benefit',
-      variants: [{ condition: {}, max_value: null, display_text: '연 600만원까지 비과세', priority: 1 }],
-      default_display: '연 600만원까지 비과세',
+    "id": "pol_shinsenga_2026",
+    "title": "신생아 특례 구입자금 대출",
+    "short_desc": "2년 이내 출산 가구를 위한 초저금리 주택 구입 대출 (순자산 5.11억 이하)",
+    "source_org": "주택도시기금",
+    "category": "loan",
+    "official_url": "https://enhuf.molit.go.kr",
+    "as_of": "2026.6",
+    "display_amount": {
+      "type": "loan",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 400000000,
+          "display_text": "최대 4억",
+          "priority": 1
+        }
+      ],
+      "default_display": "최대 4억"
     },
-    display_rate: { type: 'interest', min: 3.3, max: 4.3, display_text: '최대 우대금리 +1.5%p' },
-    rules: [
-      { id: 'age', type: 'age', params: { min: 19, max: 34 }, label: '만 19~34세', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 36000000, scope: 'individual' }, label: '본인 연소득 3,600만 이하', weight: 9, required: true },
+    "display_rate": {
+      "type": "interest",
+      "min": 1.8,
+      "max": 4.5,
+      "display_text": "1.8~4.5% (26.6 기준)"
+    },
+    "rules": [
+      {
+        "id": "newborn",
+        "type": "children",
+        "params": {
+          "newborn_within_years": 2,
+          "newborn_after_date": "2023-01-01"
+        },
+        "label": "2023.1.1 이후 출산 + 2년 이내",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 200000000,
+          "scope": "household"
+        },
+        "label": "부부 합산 2억 이하",
+        "weight": 8,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "bonus_rules": [
+      {
+        "id": "child_1",
+        "condition": {
+          "child_count_min": 1
+        },
+        "benefit": {
+          "type": "rate_discount",
+          "value": 0.1
+        },
+        "display_label": "1자녀 -0.1%p"
+      },
+      {
+        "id": "child_2",
+        "condition": {
+          "child_count_min": 2
+        },
+        "benefit": {
+          "type": "rate_discount",
+          "value": 0.3
+        },
+        "display_label": "2자녀 -0.3%p"
+      }
+    ]
   },
-
-  // 5. 청년 월세 한시 특별지원
   {
-    id: 'pol_chungnyeon_wolse_2026',
-    title: '청년 월세 한시 특별지원',
-    short_desc: '독립 청년에게 월세 최대 20만원 12개월 지원',
-    source_org: '국토교통부',
-    category: 'grant',
-    display_amount: {
-      type: 'grant',
-      variants: [{ condition: {}, max_value: 2400000, display_text: '월 20만 × 12개월 (총 240만)', priority: 1 }],
-      default_display: '월 20만 × 12개월',
+    "id": "pol_chungnyeon_chungyak_2026",
+    "title": "청년 주택드림 청약통장",
+    "short_desc": "청년 무주택자를 위한 청약통장 — 비과세 + 우대금리(최대 4.5%) + 주택드림 대출 연계",
+    "source_org": "주택도시기금",
+    "category": "subscription",
+    "display_amount": {
+      "type": "tax_benefit",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": null,
+          "display_text": "연 600만원까지 비과세",
+          "priority": 1
+        }
+      ],
+      "default_display": "연 600만원까지 비과세"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'age', type: 'age', params: { min: 19, max: 34 }, label: '만 19~34세', weight: 10, required: true },
-      { id: 'household', type: 'household_status', params: { status: 'independent' }, label: '독립 가구', weight: 10, required: true },
-      { id: 'income_self', type: 'income_household', params: { max_annual: 30000000, scope: 'individual' }, label: '본인 연소득 3천만 이하', weight: 9, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택', weight: 10, required: true },
+    "display_rate": {
+      "type": "interest",
+      "min": 2.8,
+      "max": 4.5,
+      "display_text": "기본+우대 최대 연 4.5% (26.6 기준)"
+    },
+    "rules": [
+      {
+        "id": "age",
+        "type": "age",
+        "params": {
+          "min": 19,
+          "max": 34
+        },
+        "label": "만 19~34세",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 50000000,
+          "scope": "individual"
+        },
+        "label": "본인 연소득 5,000만 이하",
+        "weight": 9,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "official_url": "https://www.molit.go.kr/2024dreamaccount/main.jsp",
+    "as_of": "2026.6"
   },
-
-  // 6. 생애최초 특별공급
   {
-    id: 'pol_saengae_choecho_2026',
-    title: '생애최초 특별공급',
-    short_desc: '5년 이상 무주택 가구를 위한 특별공급',
-    source_org: '국토교통부',
-    category: 'subscription',
-    display_amount: {
-      type: 'loan',
-      variants: [{ condition: {}, max_value: null, display_text: '특별공급 자격', priority: 1 }],
-      default_display: '특별공급 자격',
+    "id": "pol_chungnyeon_wolse_2026",
+    "title": "청년 월세 한시 특별지원",
+    "short_desc": "독립 청년에게 월세 최대 20만원 24개월 지원 (2026년 상시 사업 전환)",
+    "source_org": "국토교통부",
+    "category": "grant",
+    "display_amount": {
+      "type": "grant",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 4800000,
+          "display_text": "월 20만 × 24개월 (총 480만)",
+          "priority": 1
+        }
+      ],
+      "default_display": "월 20만 × 24개월 (총 480만)"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'housing', type: 'housing', params: { status: 'homeless', min_homeless_years: 5 }, label: '5년 이상 무주택', weight: 10, required: true },
-      { id: 'first_buyer', type: 'first_buyer', params: { required: true }, label: '생애 첫 주택 구입자', weight: 10, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "age",
+        "type": "age",
+        "params": {
+          "min": 19,
+          "max": 34
+        },
+        "label": "만 19~34세",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "household",
+        "type": "household_status",
+        "params": {
+          "status": "independent"
+        },
+        "label": "독립 가구",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income_self",
+        "type": "income_household",
+        "params": {
+          "max_annual": 18000000,
+          "scope": "individual"
+        },
+        "label": "청년가구 중위소득 60% 이하",
+        "weight": 9,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "official_url": "https://www.bokjiro.go.kr",
+    "as_of": "2026.6"
   },
-
-  // 7. 중기청 청년 전세대출
   {
-    id: 'pol_youth_loan_2026',
-    title: '중소기업 청년 전세대출',
-    short_desc: '중소기업 재직 청년을 위한 저금리 전세대출',
-    source_org: '주택도시기금',
-    category: 'rental',
-    display_amount: {
-      type: 'loan',
-      variants: [{ condition: {}, max_value: 100000000, display_text: '최대 1억', priority: 1 }],
-      default_display: '최대 1억',
+    "id": "pol_saengae_choecho_2026",
+    "title": "생애최초 특별공급",
+    "short_desc": "생애 첫 주택을 구입하는 무주택 세대를 위한 특별공급",
+    "source_org": "국토교통부",
+    "category": "subscription",
+    "display_amount": {
+      "type": "loan",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": null,
+          "display_text": "특별공급 자격",
+          "priority": 1
+        }
+      ],
+      "default_display": "특별공급 자격"
     },
-    display_rate: { type: 'interest', min: 1.2, max: 1.2, display_text: '1.2% 고정' },
-    rules: [
-      { id: 'age', type: 'age', params: { min: 19, max: 34 }, label: '만 19~34세', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 50000000, scope: 'individual' }, label: '본인 연소득 5천 이하', weight: 9, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대 (전원 주택소유 이력 없음)",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "first_buyer",
+        "type": "first_buyer",
+        "params": {
+          "required": true
+        },
+        "label": "생애 첫 주택 구입자",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "official_url": "https://www.applyhome.co.kr",
+    "as_of": "2026.6"
   },
-
-  // ============================================
-  // ★ v0.11 — 추가 8개 정책 (지자체/보증/다양화)
-  // ============================================
-
-  // 8. 서울시 청년 월세 지원 (지자체 - 거주 요구)
   {
-    id: 'pol_seoul_wolse_2026',
-    title: '서울시 청년 월세 지원',
-    short_desc: '서울 거주 만 19~39세 청년에게 월 20만원 10개월 지원',
-    source_org: '서울특별시',
-    category: 'grant',
-    display_amount: {
-      type: 'grant',
-      variants: [{ condition: {}, max_value: 2000000, display_text: '월 20만 × 10개월 (총 200만)', priority: 1 }],
-      default_display: '월 20만 × 10개월',
+    "id": "pol_youth_loan_2026",
+    "title": "청년전용 버팀목 전세자금대출",
+    "short_desc": "무주택 청년 전세대출 (중소기업 취업청년 우대 포함, 구 중기청 대출 통합)",
+    "source_org": "주택도시기금",
+    "category": "rental",
+    "display_amount": {
+      "type": "loan",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 200000000,
+          "display_text": "최대 2억 (25세 미만 단독세대주 1.5억)",
+          "priority": 1
+        }
+      ],
+      "default_display": "최대 2억 (25세 미만 단독세대주 1.5억)"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'age', type: 'age', params: { min: 19, max: 39 }, label: '만 19~39세', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 36000000, scope: 'individual' }, label: '본인 연소득 3,600만 이하', weight: 9, required: true },
+    "display_rate": {
+      "type": "interest",
+      "min": 1.7,
+      "max": 3.3,
+      "display_text": "연 1.7~3.3% (중기청 우대 포함, 26.6 기준)"
+    },
+    "rules": [
+      {
+        "id": "age",
+        "type": "age",
+        "params": {
+          "min": 19,
+          "max": 34
+        },
+        "label": "만 19~34세",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 50000000,
+          "scope": "individual"
+        },
+        "label": "부부합산 연소득 5천만 이하",
+        "weight": 9,
+        "required": true
+      }
     ],
-    region: {
-      type: 'include',
-      regions: ['seoul'],
-      residence_requirement: { must_reside: true, min_months: 0 },
+    "region": {
+      "type": "any"
     },
+    "official_url": "https://enhuf.molit.go.kr",
+    "as_of": "2026.6"
   },
-
-  // 9. 경기도 청년 면접수당 (지자체 - 구직 청년)
   {
-    id: 'pol_gyeonggi_interview_2026',
-    title: '경기도 청년 면접수당',
-    short_desc: '경기 거주 만 18~39세 미취업 청년 면접 비용 지원',
-    source_org: '경기도청',
-    category: 'grant',
-    display_amount: {
-      type: 'grant',
-      variants: [{ condition: {}, max_value: 500000, display_text: '연 최대 50만 (회당 5만 × 10회)', priority: 1 }],
-      default_display: '연 최대 50만',
+    "id": "pol_seoul_wolse_2026",
+    "title": "서울시 청년 월세 지원",
+    "short_desc": "서울 거주 19~39세 청년 1인가구에 월 20만원 12개월 지원 (생애 1회)",
+    "source_org": "서울특별시",
+    "category": "grant",
+    "display_amount": {
+      "type": "grant",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 2400000,
+          "display_text": "월 20만 × 12개월 (총 240만, 생애 1회)",
+          "priority": 1
+        }
+      ],
+      "default_display": "월 20만 × 12개월 (총 240만, 생애 1회)"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'age', type: 'age', params: { min: 18, max: 39 }, label: '만 18~39세', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 45000000, scope: 'household' }, label: '가구 소득 4,500만 이하', weight: 9, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "age",
+        "type": "age",
+        "params": {
+          "min": 19,
+          "max": 39
+        },
+        "label": "만 19~39세",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 46000000,
+          "scope": "household"
+        },
+        "label": "중위소득 150% 이하",
+        "weight": 9,
+        "required": true
+      }
     ],
-    region: {
-      type: 'include',
-      regions: ['gyeonggi'],
-      residence_requirement: { must_reside: true, min_months: 0 },
+    "region": {
+      "type": "include",
+      "regions": [
+        "seoul"
+      ],
+      "residence_requirement": {
+        "must_reside": true,
+        "min_months": 0
+      }
     },
+    "official_url": "https://housing.seoul.go.kr",
+    "as_of": "2026.6"
   },
-
-  // 10. 부산시 신혼부부 주택임차료 지원 (지자체 - 신혼)
   {
-    id: 'pol_busan_newlywed_2026',
-    title: '부산시 신혼부부 주택임차료 지원',
-    short_desc: '부산 거주 신혼부부에게 월 임차료 일부 지원',
-    source_org: '부산광역시',
-    category: 'grant',
-    display_amount: {
-      type: 'grant',
-      variants: [{ condition: {}, max_value: 4800000, display_text: '월 40만 × 12개월 (총 480만)', priority: 1 }],
-      default_display: '월 40만 × 12개월',
+    "id": "pol_gyeonggi_interview_2026",
+    "title": "경기도 청년 면접수당",
+    "short_desc": "경기 거주 18~39세 청년 면접 비용 지원 (소득·합격 무관)",
+    "source_org": "경기도청",
+    "category": "grant",
+    "display_amount": {
+      "type": "grant",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 500000,
+          "display_text": "연 최대 50만 (회당 5만 × 10회)",
+          "priority": 1
+        }
+      ],
+      "default_display": "연 최대 50만"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'marriage', type: 'marriage', params: { status: 'married', max_years: 7, upcoming_ok: true }, label: '혼인 7년 이내', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 80000000, scope: 'couple' }, label: '부부 합산 8천만 이하', weight: 9, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "age",
+        "type": "age",
+        "params": {
+          "min": 18,
+          "max": 39
+        },
+        "label": "만 18~39세",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: {
-      type: 'include',
-      regions: ['busan'],
-      residence_requirement: { must_reside: true, min_months: 0 },
+    "region": {
+      "type": "include",
+      "regions": [
+        "gyeonggi"
+      ],
+      "residence_requirement": {
+        "must_reside": true,
+        "min_months": 0
+      }
     },
+    "official_url": "https://apply.jobaba.net",
+    "as_of": "2026.6"
   },
-
-  // 11. HUG 전세보증금 반환보증 (보증)
   {
-    id: 'pol_hug_jeonse_2026',
-    title: 'HUG 전세보증금 반환보증',
-    short_desc: '전세금 떼이는 것을 막아주는 정부 보증 (집주인 위약 시 HUG가 대신 반환)',
-    source_org: 'HUG 주택도시보증공사',
-    category: 'guarantee',
-    display_amount: {
-      type: 'discount',
-      variants: [{ condition: {}, max_value: null, display_text: '보증료율 0.115~0.154%', priority: 1 }],
-      default_display: '보증료 0.122%',
+    "id": "pol_busan_newlywed_2026",
+    "title": "부산 신혼부부 주택융자·대출이자 지원",
+    "short_desc": "부산 거주 무주택 신혼부부 전세 대출이자 지원 (연 최대 400만, 최대 10년)",
+    "source_org": "부산광역시",
+    "category": "grant",
+    "display_amount": {
+      "type": "grant",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 4000000,
+          "display_text": "대출이자 연 최대 400만 (최대 10년)",
+          "priority": 1
+        }
+      ],
+      "default_display": "대출이자 연 최대 400만 (최대 10년)"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 임차인', weight: 10, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "marriage",
+        "type": "marriage",
+        "params": {
+          "status": "married",
+          "max_years": 7,
+          "upcoming_ok": true
+        },
+        "label": "혼인 7년 이내",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": 130000000,
+          "scope": "couple"
+        },
+        "label": "부부합산 연소득 1.3억 이하",
+        "weight": 9,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "include",
+      "regions": [
+        "busan"
+      ],
+      "residence_requirement": {
+        "must_reside": true,
+        "min_months": 0
+      }
+    },
+    "official_url": "https://www.busan.go.kr/childcare/childcare010105",
+    "as_of": "2026.6"
   },
-
-  // 12. HF 전세금 안심대출 보증 (보증)
   {
-    id: 'pol_hf_jeonse_2026',
-    title: 'HF 전세자금 보증',
-    short_desc: '한국주택금융공사 전세대출 보증 — 자력 보증서로 임차 자금 마련',
-    source_org: '한국주택금융공사 (HF)',
-    category: 'guarantee',
-    display_amount: {
-      type: 'discount',
-      variants: [{ condition: {}, max_value: 444000000, display_text: '최대 4.44억 보증', priority: 1 }],
-      default_display: '최대 4.44억 보증',
+    "id": "pol_hug_jeonse_2026",
+    "title": "HUG 전세보증금 반환보증",
+    "short_desc": "전세금 떼이는 것을 막아주는 보증 — 집주인 미반환 시 HUG가 대신 반환 (수도권 보증금 7억 이하)",
+    "source_org": "HUG 주택도시보증공사",
+    "category": "guarantee",
+    "display_amount": {
+      "type": "discount",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": null,
+          "display_text": "보증료율 0.115~0.154%",
+          "priority": 1
+        }
+      ],
+      "default_display": "보증료 0.122%"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: 100000000, scope: 'household' }, label: '연소득 1억 이하', weight: 8, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 임차인",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "official_url": "https://www.khug.or.kr",
+    "as_of": "2026.6"
   },
-
-  // 13. 다자녀 가구 특별공급 (다자녀)
   {
-    id: 'pol_multichild_special_2026',
-    title: '다자녀 가구 특별공급',
-    short_desc: '미성년 자녀 3명 이상 가구를 위한 분양 특별공급',
-    source_org: '국토교통부',
-    category: 'subscription',
-    display_amount: {
-      type: 'discount',
-      variants: [{ condition: {}, max_value: null, display_text: '특별공급 자격 (별도 청약 경쟁)', priority: 1 }],
-      default_display: '특별공급 자격',
+    "id": "pol_hf_jeonse_2026",
+    "title": "HF 전세자금 보증",
+    "short_desc": "HF 보증서로 은행 전세대출을 받는 보증 상품 (3대 기관 중 보증료 최저)",
+    "source_org": "한국주택금융공사 (HF)",
+    "category": "guarantee",
+    "display_amount": {
+      "type": "discount",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": 444000000,
+          "display_text": "최대 4.44억 보증",
+          "priority": 1
+        }
+      ],
+      "default_display": "최대 4.44억 보증"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'children', type: 'children', params: { min_count: 3 }, label: '자녀 3명 이상', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
-    bonus_rules: [
-      { id: 'child_4', condition: { child_count_min: 4 }, benefit: { type: 'score_boost', value: 5 }, display_label: '4자녀 이상 가점' },
-    ],
+    "region": {
+      "type": "any"
+    },
+    "official_url": "https://www.hf.go.kr",
+    "as_of": "2026.6"
   },
-
-  // 14. 노부모 부양 특별공급
   {
-    id: 'pol_elder_parent_special_2026',
-    title: '노부모 부양 특별공급',
-    short_desc: '만 65세 이상 직계존속을 3년 이상 부양 중인 가구',
-    source_org: '국토교통부',
-    category: 'subscription',
-    display_amount: {
-      type: 'discount',
-      variants: [{ condition: {}, max_value: null, display_text: '특별공급 자격', priority: 1 }],
-      default_display: '특별공급 자격',
+    "id": "pol_multichild_special_2026",
+    "title": "다자녀 가구 특별공급",
+    "short_desc": "미성년 자녀 2명 이상 가구를 위한 분양 특별공급 (2026년 2자녀로 완화)",
+    "source_org": "국토교통부",
+    "category": "subscription",
+    "display_amount": {
+      "type": "discount",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": null,
+          "display_text": "특별공급 자격 (별도 청약 경쟁)",
+          "priority": 1
+        }
+      ],
+      "default_display": "특별공급 자격"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'parent_support', type: 'parent_support', params: { required: true }, label: '노부모(65세+) 3년 이상 부양', weight: 10, required: true },
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'first_buyer', type: 'first_buyer', params: { required: true }, label: '생애 첫 주택 구입자', weight: 8, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "children",
+        "type": "children",
+        "params": {
+          "min_count": 2
+        },
+        "label": "미성년 자녀 2명 이상",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: { type: 'any' },
+    "region": {
+      "type": "any"
+    },
+    "bonus_rules": [
+      {
+        "id": "child_4",
+        "condition": {
+          "child_count_min": 4
+        },
+        "benefit": {
+          "type": "score_boost",
+          "value": 5
+        },
+        "display_label": "4자녀 이상 가점"
+      }
+    ],
+    "official_url": "https://www.applyhome.co.kr",
+    "as_of": "2026.6"
   },
-
-  // 15. SH 장기전세주택
   {
-    id: 'pol_sh_longjeonse_2026',
-    title: 'SH 장기전세주택',
-    short_desc: '서울 무주택자 대상 최장 20년 거주 가능한 시세 80% 전세주택',
-    source_org: '서울주택도시공사 (SH)',
-    category: 'rental',
-    display_amount: {
-      type: 'discount',
-      variants: [{ condition: {}, max_value: null, display_text: '시세 80% 전세 (최장 20년)', priority: 1 }],
-      default_display: '시세 80% 전세',
+    "id": "pol_elder_parent_special_2026",
+    "title": "노부모 부양 특별공급",
+    "short_desc": "만 65세 이상 직계존속을 3년 이상 부양 중인 무주택 세대주",
+    "source_org": "국토교통부",
+    "category": "subscription",
+    "display_amount": {
+      "type": "discount",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": null,
+          "display_text": "특별공급 자격",
+          "priority": 1
+        }
+      ],
+      "default_display": "특별공급 자격"
     },
-    display_rate: { type: 'none' },
-    rules: [
-      { id: 'housing', type: 'housing', params: { status: 'homeless' }, label: '무주택 세대주', weight: 10, required: true },
-      { id: 'income', type: 'income_household', params: { max_annual: null, scope: 'household', basis: 'median_income', basis_multiplier: 1.0 }, label: '기준 중위소득 100% 이하', weight: 9, required: true },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "parent_support",
+        "type": "parent_support",
+        "params": {
+          "required": true
+        },
+        "label": "노부모(65세+) 3년 이상 부양",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      }
     ],
-    region: {
-      type: 'include',
-      regions: ['seoul'],
-      residence_requirement: { must_reside: true, min_months: 12 },
+    "region": {
+      "type": "any"
     },
+    "official_url": "https://www.applyhome.co.kr",
+    "as_of": "2026.6"
   },
+  {
+    "id": "pol_sh_longjeonse_2026",
+    "title": "SH 장기전세주택",
+    "short_desc": "서울 무주택자 대상 최장 20년 거주 가능한 시세 80% 전세주택",
+    "source_org": "서울주택도시공사 (SH)",
+    "category": "rental",
+    "display_amount": {
+      "type": "discount",
+      "variants": [
+        {
+          "condition": {},
+          "max_value": null,
+          "display_text": "시세 80% 전세 (최장 20년)",
+          "priority": 1
+        }
+      ],
+      "default_display": "시세 80% 전세"
+    },
+    "display_rate": {
+      "type": "none"
+    },
+    "rules": [
+      {
+        "id": "housing",
+        "type": "housing",
+        "params": {
+          "status": "homeless"
+        },
+        "label": "무주택 세대주",
+        "weight": 10,
+        "required": true
+      },
+      {
+        "id": "income",
+        "type": "income_household",
+        "params": {
+          "max_annual": null,
+          "scope": "household",
+          "basis": "median_income",
+          "basis_multiplier": 1
+        },
+        "label": "기준 중위소득 100% 이하",
+        "weight": 9,
+        "required": true
+      }
+    ],
+    "region": {
+      "type": "include",
+      "regions": [
+        "seoul"
+      ],
+      "residence_requirement": {
+        "must_reside": true,
+        "min_months": 12
+      }
+    }
+  }
 ];
 </script>
 
