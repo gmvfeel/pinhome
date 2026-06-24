@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.29 (간편확인 기능화 + 매칭 점검)</title>
+<title>PinHome · v0.31 (날짜 자동 + 정책상세 메뉴 정리)</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2057,7 +2057,6 @@
       <button class="nav-item on" data-screen="dash">대시보드</button>
       <button class="nav-item" data-screen="check">간편 확인</button>
       <button class="nav-item" data-screen="result">결과</button>
-      <button class="nav-item" data-screen="detail">정책 상세</button>
       <button class="nav-item" data-screen="mypage">마이</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -2104,7 +2103,7 @@
 
     <!-- Hero -->
     <div class="hero">
-      <div class="hero-eyebrow">2026.05.27 · 매주 업데이트</div>
+      <div class="hero-eyebrow" id="heroDate">매주 업데이트</div>
 
       <div class="hero-headline-stage">
         <h1 class="hero-headline on" data-idx="0">받을 수 있는 정책,<br><em id="heroMatchCount">—</em>개를 찾았어요</h1>
@@ -2232,7 +2231,7 @@
       <button class="cta-btn" onclick="go('check')">조건 추가하기<i class="ti ti-arrow-right"></i></button>
     </div>
 
-    <div class="footer">PinHome · v0.29 · 간편확인 저장·복원·매칭반영 + 무주택 판정 수정</div>
+    <div class="footer">PinHome · v0.31 · 오늘 날짜 자동 표시 + 정책상세 메뉴 제거</div>
   </section>
 
   <!-- ============================================ -->
@@ -2393,7 +2392,6 @@
   <button class="mob-nav-item on" data-screen="dash"><i class="ti ti-layout-dashboard"></i><span>대시보드</span></button>
   <button class="mob-nav-item" data-screen="check"><i class="ti ti-bolt"></i><span>확인</span></button>
   <button class="mob-nav-item" data-screen="result"><i class="ti ti-circle-check"></i><span>결과</span></button>
-  <button class="mob-nav-item" data-screen="detail"><i class="ti ti-list-details"></i><span>상세</span></button>
   <button class="mob-nav-item" data-screen="mypage"><i class="ti ti-user"></i><span>마이</span></button>
 </nav>
 
@@ -2465,6 +2463,16 @@
       b.classList.add('on');
     });
   });
+
+  // 화면 위 날짜 — 오늘 날짜 자동 표시
+  (function() {
+    const el = document.getElementById('heroDate');
+    if (el) {
+      const d = new Date();
+      const f = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+      el.textContent = f + ' · 매주 업데이트';
+    }
+  })();
 
   // 헤드라인 자동 회전
   (function() {
@@ -2984,6 +2992,19 @@
     document.body.style.overflow = '';
   }
 
+  // 입력 모달 배경 클릭 닫기 (drag-safe: mousedown·mouseup 둘 다 배경에서 일어났을 때만)
+  ['Children', 'Housing', 'Income'].forEach(name => {
+    const ov = document.getElementById('modal' + name);
+    if (ov) {
+      let downOnBg = false;
+      ov.addEventListener('mousedown', (e) => { downOnBg = (e.target === ov); });
+      ov.addEventListener('mouseup', (e) => {
+        if (downOnBg && e.target === ov) closeModal(name);
+        downOnBg = false;
+      });
+    }
+  });
+
   // 모달 옵션 클릭
   document.querySelectorAll('.modal .onboard-option').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3127,7 +3148,7 @@
   // ====== Helpers ======
 
   // 시연용 고정 날짜 (Python 매처와 동일)
-  M.today = function() { return new Date('2026-05-27'); };
+  M.today = function() { return new Date(); };
 
   M.yearsBetween = function(d1, d2) {
     const ms = Math.abs(d2.getTime() - d1.getTime());
