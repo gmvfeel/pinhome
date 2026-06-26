@@ -2183,6 +2183,12 @@
       </div>
     </div>
 
+    <!-- 지역 토글 -->
+    <div class="filters" id="regionToggle" style="display:none">
+      <button class="filter-btn on" data-rgn="mine">📍 내 지역+전국</button>
+      <button class="filter-btn" data-rgn="all">🌐 전체 지역</button>
+    </div>
+
     <!-- Filters (동적 생성) -->
     <div class="filters" id="categoryFilters">
       <button class="filter-btn on" data-cat="all">전체<span class="count">—</span></button>
@@ -3544,6 +3550,7 @@
 
   // 지역 거주 요건 체크 (지자체 정책용)
   M.checkRegionRequirement = function(region, user) {
+    if (window.phShowAllRegions) return { matched: true, reason: '전체 지역 보기' };
     if (!region || region.type === 'any') return { matched: true, reason: '전국 대상' };
 
     const userRegion = user.residence ? user.residence.region : null;
@@ -4767,6 +4774,23 @@ window.PinHomePolicies = [
 
     // 현재 매칭 데이터 저장 (필터 / 즐겨찾기 적용용)
     window._currentMatchData = data;
+
+    // 지역 토글 (최초 1회 바인딩)
+    const rgnBox = document.getElementById('regionToggle');
+    if (rgnBox) {
+      rgnBox.style.display = '';
+      if (!rgnBox._bound) {
+        rgnBox._bound = true;
+        rgnBox.querySelectorAll('.filter-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            rgnBox.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            window.phShowAllRegions = (btn.dataset.rgn === 'all');
+            window.updateDashboardForTier1();
+          });
+        });
+      }
+    }
 
     // 카테고리 필터 빌드
     buildCategoryFilters(data);
