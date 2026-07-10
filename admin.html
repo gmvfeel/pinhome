@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.4 (신규 정책 AI 변환·검수)</title>
+<title>PinHome 백오피스 · v0.5 (운영 통계)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -99,6 +99,22 @@
   .info-box b{color:var(--ink);font-weight:600;}
   .btn-sm{padding:7px 13px;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--ink-soft);border-radius:7px;font-size:12.5px;}
   .btn-sm:hover{color:var(--ink);}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .kpi-label{font-size:12px;color:var(--ink-mute);margin-bottom:8px;}
+  .kpi-value{font-size:26px;font-weight:800;letter-spacing:-.02em;}
+  .kpi-value.em{color:var(--em);}
+  .kpi-value.amber{color:var(--amber);}
+  .stat-section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
+  .stat-title{font-size:14px;font-weight:700;margin-bottom:16px;}
+  .bar-row{display:grid;grid-template-columns:120px 1fr 44px;gap:12px;align-items:center;margin-bottom:10px;}
+  .bar-label{font-size:12.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{height:10px;background:var(--surface-2);border-radius:6px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--em);border-radius:6px;}
+  .bar-fill.amber{background:var(--amber);}
+  .bar-fill.mute{background:var(--line-strong);}
+  .bar-val{font-size:12.5px;color:var(--ink-soft);text-align:right;}
+  @media (max-width:720px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} .bar-row{grid-template-columns:90px 1fr 40px;} }
 
   /* 편집기 */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -165,7 +181,7 @@
       <button class="side-item" onclick="toast('정책 행을 클릭하면 편집 창이 열려요')"><i class="ti ti-edit"></i>정책 편집</button>
       <button class="side-item" id="nav-convert" onclick="switchPage('convert')"><i class="ti ti-sparkles"></i>AI 변환</button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-adjustments"></i>기준값<span class="side-badge">준비 중</span></button>
-      <button class="side-item soon" onclick="soon()"><i class="ti ti-chart-bar"></i>통계<span class="side-badge">준비 중</span></button>
+      <button class="side-item" id="nav-stats" onclick="switchPage('stats')"><i class="ti ti-chart-bar"></i>통계</button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-users"></i>회원<span class="side-badge">준비 중</span></button>
     </nav>
     <div class="side-foot"><button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i>로그아웃</button></div>
@@ -221,6 +237,14 @@
       <div id="wrows"><div class="loading">불러오는 중…</div></div>
     </div>
   </div><!-- /page-convert -->
+
+  <div id="page-stats" style="display:none">
+    <div class="page-head">
+      <div><div class="page-title">운영 통계</div><div class="page-sub">저장소 정책 데이터 기준 · 실시간</div></div>
+      <div class="head-actions"><button class="sel" onclick="loadPolicies().then(()=>renderStats())" title="새로고침"><i class="ti ti-refresh"></i></button></div>
+    </div>
+    <div id="statsBody"><div class="loading">불러오는 중…</div></div>
+  </div><!-- /page-stats -->
   </main>
 </div>
 
@@ -476,13 +500,45 @@
   // ===== 페이지 전환 =====
   let watchRows=[], publishedMap={}, watchLoaded=false, draftObj=null, draftSid=null;
   function switchPage(name){
-    const isList = name==='list';
-    document.getElementById('page-list').style.display = isList ? '' : 'none';
-    document.getElementById('page-convert').style.display = isList ? 'none' : '';
-    document.getElementById('nav-list').classList.toggle('on', isList);
-    document.getElementById('nav-convert').classList.toggle('on', !isList);
-    if(!isList && !watchLoaded) loadWatch();
+    const pages={list:'page-list',convert:'page-convert',stats:'page-stats'}, navs={list:'nav-list',convert:'nav-convert',stats:'nav-stats'};
+    for(const k in pages){ document.getElementById(pages[k]).style.display=(k===name)?'':'none'; const n=document.getElementById(navs[k]); if(n) n.classList.toggle('on',k===name); }
+    if(name==='convert' && !watchLoaded) loadWatch();
+    if(name==='stats') renderStats();
   }
+
+  // ===== 통계 =====
+  const SIDO_LABEL={seoul:'서울',busan:'부산',daegu:'대구',incheon:'인천',gwangju:'광주',daejeon:'대전',ulsan:'울산',sejong:'세종',gyeonggi:'경기',gangwon:'강원',chungbuk:'충북',chungnam:'충남',jeonbuk:'전북',jeonnam:'전남',gyeongbuk:'경북',gyeongnam:'경남',jeju:'제주'};
+  function bar(label,count,total,cls){
+    const pct= total>0 ? Math.round(count/total*100) : 0;
+    return '<div class="bar-row"><div class="bar-label">'+escapeHtml(label)+'</div><div class="bar-track"><div class="bar-fill '+(cls||'')+'" style="width:'+pct+'%"></div></div><div class="bar-val">'+count+'</div></div>';
+  }
+  function renderStats(){
+    const body=document.getElementById('statsBody');
+    if(!policies.length){ body.innerHTML='<div class="loading">정책 데이터를 불러오는 중…</div>'; return; }
+    const total=policies.length, active=policies.filter(p=>p.is_active).length, inactive=total-active;
+    let req=0,opt=0,none=0;
+    policies.forEach(p=>{ const s=incomeState(p); if(s==='required')req++; else if(s==='optional')opt++; else none++; });
+    const byCat={}; policies.forEach(p=>{ const c=catLabel(p.category); byCat[c]=(byCat[c]||0)+1; });
+    let national=0,local=0; const bySido={};
+    policies.forEach(p=>{ const rg=p.data&&p.data.region; if(!rg||rg.type==='any'){national++;} else if(rg.type==='include'){local++;(rg.regions||[]).forEach(code=>bySido[code]=(bySido[code]||0)+1);} else national++; });
+    let auto=0,pol=0,etc=0; policies.forEach(p=>{ const id=p.id||''; if(id.startsWith('auto_'))auto++; else if(id.startsWith('pol_'))pol++; else etc++; });
+    const catRows=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>bar(k,v,total,'')).join('');
+    const sidoRows=Object.entries(bySido).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>bar(SIDO_LABEL[k]||k,v,local||1,'')).join('') || '<div class="bar-label" style="color:var(--ink-mute)">지자체 전용 정책 없음</div>';
+    body.innerHTML =
+      '<div class="kpi-grid">'
+      +'<div class="kpi-card"><div class="kpi-label">전체 정책</div><div class="kpi-value">'+total+'</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">활성</div><div class="kpi-value em">'+active+'</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">비활성</div><div class="kpi-value">'+inactive+'</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">소득조건 ‘선택’(주의)</div><div class="kpi-value '+(opt>0?'amber':'')+'">'+opt+'</div></div>'
+      +'</div>'
+      +'<div class="stat-section"><div class="stat-title">카테고리별 분포</div>'+catRows+'</div>'
+      +'<div class="stat-section"><div class="stat-title">소득조건 상태</div>'+bar('필수',req,total,'')+bar('선택(주의)',opt,total,'amber')+bar('없음',none,total,'mute')+'</div>'
+      +'<div class="stat-section"><div class="stat-title">지역 분포</div>'+bar('전국',national,total,'')+bar('지자체',local,total,'')
+        +'<div style="height:10px"></div><div style="font-size:12.5px;color:var(--ink-mute);margin-bottom:12px">지자체 정책 시·도별 (상위 10)</div>'+sidoRows+'</div>'
+      +'<div class="stat-section"><div class="stat-title">출처</div>'+bar('AI 변환 (auto)',auto,total,'')+bar('직접 작성 (pol)',pol,total,'')+(etc?bar('기타',etc,total,'mute'):'')+'</div>';
+  }
+
+  // ===== 페이지 전환 헬퍼 끝 =====
 
   // ===== 원천(신규 변환 큐) =====
   async function loadWatch(){
