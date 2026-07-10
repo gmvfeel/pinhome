@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.5 (운영 통계)</title>
+<title>PinHome 백오피스 · v0.6 (외부 기준값)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -180,7 +180,7 @@
       <button class="side-item on" id="nav-list" onclick="switchPage('list')"><i class="ti ti-list-details"></i>정책 목록</button>
       <button class="side-item" onclick="toast('정책 행을 클릭하면 편집 창이 열려요')"><i class="ti ti-edit"></i>정책 편집</button>
       <button class="side-item" id="nav-convert" onclick="switchPage('convert')"><i class="ti ti-sparkles"></i>AI 변환</button>
-      <button class="side-item soon" onclick="soon()"><i class="ti ti-adjustments"></i>기준값<span class="side-badge">준비 중</span></button>
+      <button class="side-item" id="nav-refs" onclick="switchPage('refs')"><i class="ti ti-adjustments"></i>기준값</button>
       <button class="side-item" id="nav-stats" onclick="switchPage('stats')"><i class="ti ti-chart-bar"></i>통계</button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-users"></i>회원<span class="side-badge">준비 중</span></button>
     </nav>
@@ -245,6 +245,26 @@
     </div>
     <div id="statsBody"><div class="loading">불러오는 중…</div></div>
   </div><!-- /page-stats -->
+
+  <div id="page-refs" style="display:none">
+    <div class="page-head">
+      <div><div class="page-title">외부 기준값</div><div class="page-sub">매칭에 쓰이는 기준 중위소득·최저임금 등 · 저장하면 사용자 앱에 반영</div></div>
+      <div class="head-actions"><button class="sel" onclick="loadRefs()" title="새로고침"><i class="ti ti-refresh"></i></button></div>
+    </div>
+    <div class="banner" style="background:var(--em-soft);border-color:var(--em-line);color:var(--em)">
+      <i class="ti ti-info-circle"></i>
+      <span style="flex:1">여기서 저장한 값은 사용자 앱의 소득 매칭 계산에 그대로 쓰입니다. 보통 연 1회, 정부 기준중위소득 고시가 바뀔 때 갱신하면 돼요. 숫자는 원 단위로 입력하세요(예: 5천만 = 50000000).</span>
+    </div>
+    <div class="stat-section" style="max-width:560px">
+      <div class="stat-title">기준 중위소득 (연 소득, 원) — 가구원 수별</div>
+      <div id="refsMedian"><div class="loading">불러오는 중…</div></div>
+      <div class="stat-title" style="margin-top:22px">기타</div>
+      <div class="field"><label>월 최저임금 환산액 (원)</label><input id="ref_minwage" inputmode="numeric"></div>
+      <div class="field"><label>기준 연도</label><input id="ref_year" inputmode="numeric"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px"><button class="btn-primary" id="refsSaveBtn" onclick="saveRefs()">저장</button></div>
+      <div id="refsMsg" style="font-size:12.5px;color:var(--ink-mute);margin-top:12px"></div>
+    </div>
+  </div><!-- /page-refs -->
   </main>
 </div>
 
@@ -500,10 +520,40 @@
   // ===== 페이지 전환 =====
   let watchRows=[], publishedMap={}, watchLoaded=false, draftObj=null, draftSid=null;
   function switchPage(name){
-    const pages={list:'page-list',convert:'page-convert',stats:'page-stats'}, navs={list:'nav-list',convert:'nav-convert',stats:'nav-stats'};
+    const pages={list:'page-list',convert:'page-convert',stats:'page-stats',refs:'page-refs'}, navs={list:'nav-list',convert:'nav-convert',stats:'nav-stats',refs:'nav-refs'};
     for(const k in pages){ document.getElementById(pages[k]).style.display=(k===name)?'':'none'; const n=document.getElementById(navs[k]); if(n) n.classList.toggle('on',k===name); }
     if(name==='convert' && !watchLoaded) loadWatch();
     if(name==='stats') renderStats();
+    if(name==='refs' && !refsLoaded) loadRefs();
+  }
+
+  // ===== 외부 기준값 =====
+  let refsLoaded=false;
+  const DEF_MED={1:23368000,2:38816000,3:50203000,4:61458000,5:72413000};
+  async function loadRefs(){
+    const box=document.getElementById('refsMedian'); box.innerHTML='<div class="loading">불러오는 중…</div>';
+    let srv={};
+    try{ const { data } = await sb.from('pinhome_refs').select('data').eq('id','current').limit(1); if(data && data.length && data[0].data) srv=data[0].data; }catch(e){}
+    const med=srv.median_income_by_size||{};
+    let html='';
+    for(let n=1;n<=7;n++){ const v = med[n]!=null?med[n]:(DEF_MED[n]!=null?DEF_MED[n]:''); html+='<div class="field"><label>'+n+'인 가구</label><input id="ref_med_'+n+'" inputmode="numeric" value="'+v+'"></div>'; }
+    box.innerHTML=html;
+    document.getElementById('ref_minwage').value = srv.min_wage_monthly!=null?srv.min_wage_monthly:2096270;
+    document.getElementById('ref_year').value = srv.valid_year!=null?srv.valid_year:2026;
+    refsLoaded=true;
+  }
+  async function saveRefs(){
+    const med={};
+    for(let n=1;n<=7;n++){ const el=document.getElementById('ref_med_'+n); if(!el) continue; const raw=(el.value||'').replace(/[,\s]/g,''); if(raw!=='' && !isNaN(+raw)) med[n]=Math.round(+raw); }
+    const minwage=(document.getElementById('ref_minwage').value||'').replace(/[,\s]/g,'');
+    const year=(document.getElementById('ref_year').value||'').replace(/[,\s]/g,'');
+    const data={ median_income_by_size:med };
+    if(minwage!=='' && !isNaN(+minwage)) data.min_wage_monthly=Math.round(+minwage);
+    if(year!=='' && !isNaN(+year)) data.valid_year=Math.round(+year);
+    const btn=document.getElementById('refsSaveBtn'); btn.disabled=true; btn.textContent='저장 중…';
+    try{ await api('save_refs',{data}); document.getElementById('refsMsg').textContent='저장했어요. 사용자 앱은 새로고침하면 반영됩니다.'; toast('기준값을 저장했어요'); }
+    catch(e){ toast('저장 실패: '+(e.message||e)); document.getElementById('refsMsg').textContent=''; }
+    finally{ btn.disabled=false; btn.textContent='저장'; }
   }
 
   // ===== 통계 =====

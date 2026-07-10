@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.35 (로그인 시에만 '마이' 메뉴 표시)</title>
+<title>PinHome · v0.36 (외부 기준값 서버 연동)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -4845,7 +4845,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
   // ====== 매칭 실행 + 결과 분류 ======
   function runMatching() {
     const matchUser = buildMatchUser();
-    const results = window.PinHomeMatcher.matchBatch(window.PinHomePolicies, matchUser);
+    const results = window.PinHomeMatcher.matchBatch(window.PinHomePolicies, matchUser, window.PinHomeRefs);
 
     // 상태별 분류
     const now = results.filter(r => r.status === 'now').sort((a, b) => b.total_score - a.total_score);
@@ -5328,6 +5328,26 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
   }
   window.loadPoliciesFromServer = loadPoliciesFromServer;
 
+  // ★ v0.36 — 외부 기준값(pinhome_refs)을 서버에서 로드 → window.PinHomeRefs
+  // 실패하면 window.PinHomeRefs 를 두지 않아 매칭이 코드 기본값(DEFAULT_REFS)을 그대로 사용
+  async function loadRefsFromServer() {
+    const sb = window.getPinhomeSb ? window.getPinhomeSb() : null;
+    if (!sb) return false;
+    try {
+      const { data, error } = await sb.from('pinhome_refs').select('data').eq('id', 'current').limit(1);
+      if (error || !data || !data.length || !data[0].data) return false;
+      const base = (window.PinHomeMatcher && window.PinHomeMatcher.DEFAULT_REFS) || {};
+      const srv = data[0].data;
+      window.PinHomeRefs = {
+        median_income_by_size: Object.assign({}, base.median_income_by_size, srv.median_income_by_size || {}),
+        min_wage_monthly: (srv.min_wage_monthly != null) ? srv.min_wage_monthly : base.min_wage_monthly,
+        valid_year: (srv.valid_year != null) ? srv.valid_year : base.valid_year,
+      };
+      return true;
+    } catch (e) { return false; }
+  }
+  window.loadRefsFromServer = loadRefsFromServer;
+
   function closeOnboardIfOpen() {
     const ob = document.getElementById('onboard');
     if (ob && ob.classList.contains('on')) {
@@ -5342,6 +5362,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     if (!window._policiesLoaded) {
       window._policiesLoaded = true;
       await loadPoliciesFromServer();
+      await loadRefsFromServer();
     }
     syncFavoritesFromServer();
 
