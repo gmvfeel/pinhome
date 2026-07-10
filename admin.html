@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.9 (개별 회원 목록)</title>
+<title>PinHome 백오피스 · v0.10 (대시보드 KPI·회원검색/CSV·마감일)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -114,6 +114,7 @@
   .nav-card-t{font-size:14px;font-weight:700;}
   .nav-card-d{font-size:12px;color:var(--ink-mute);margin-top:2px;}
   .mtable{border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .mlist-controls{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
   .mhead,.mrow{display:grid;grid-template-columns:1.7fr 1fr 1.1fr 0.9fr 0.8fr 1.1fr;gap:10px;align-items:center;padding:11px 14px;font-size:12.5px;}
   .mhead{background:var(--surface);color:var(--ink-mute);font-weight:600;font-size:11.5px;}
   .mrow{border-top:1px solid var(--line);}
@@ -331,6 +332,7 @@
     <div class="field"><label>공식 URL</label><input id="edF_official_url" oninput="onField('official_url',this.value)"></div>
     <div class="field"><label>소관기관</label><input id="edF_source_org" oninput="onField('source_org',this.value)"></div>
     <div class="field"><label>기준일 (as_of)</label><input id="edF_as_of" oninput="onField('as_of',this.value)"></div>
+    <div class="field"><label>신청 마감일 (선택) — 앱에 ‘마감 임박’ 배지로 표시</label><input id="edF_application_deadline" type="date" oninput="onField('application_deadline',this.value)"></div>
     <button class="adv-toggle" onclick="toggleAdv()"><i class="ti ti-code"></i><span id="advLabel">고급 편집 (전체 JSON) 열기</span></button>
     <div class="field" id="edAdv" style="display:none">
       <textarea id="edJson" rows="18" spellcheck="false" oninput="onJsonEdit()"></textarea>
@@ -479,6 +481,7 @@
     document.getElementById('edId').textContent=p.id;
     setF('title',cur.title); setF('category',cur.category); setF('short_desc',cur.short_desc);
     setF('official_url',cur.official_url); setF('source_org',cur.source_org); setF('as_of',cur.as_of);
+    setF('application_deadline',cur.application_deadline);
     updateEditorActive(p.is_active);
     document.getElementById('edFixBox').style.display = incomeState(p)==='optional' ? 'block':'none';
     document.getElementById('edReconv').style.display = (p.id||'').startsWith('auto_') ? 'block':'none';
@@ -505,6 +508,7 @@
     try{ const o=JSON.parse(ta.value); cur=o; err.textContent='';
       setF('title',cur.title); setF('category',cur.category); setF('short_desc',cur.short_desc);
       setF('official_url',cur.official_url); setF('source_org',cur.source_org); setF('as_of',cur.as_of);
+      setF('application_deadline',cur.application_deadline);
       document.getElementById('edTitle').textContent=cur.title||'(제목 없음)';
     }catch(e){ err.textContent='JSON 형식 오류: '+e.message; }
   }
@@ -578,6 +582,8 @@
       {label:'노출 중(활성)', value:active, cls:'em'},
       {label:'숨김(비활성)', value:inactive, cls:''},
       {label:'소득조건 ‘선택’ 주의', value:optN, cls:optN>0?'amber':''},
+      {label:'온보딩 회원', value:'<span id="dashMembers">…</span>', cls:'em'},
+      {label:'즐겨찾기 총건수', value:'<span id="dashFavs">…</span>', cls:''},
     ];
     let html='<div class="kpi-grid">'+cards.map(c=>'<div class="kpi-card"><div class="kpi-label">'+c.label+'</div><div class="kpi-value '+c.cls+'">'+c.value+'</div></div>').join('')+'</div>';
     if(optN>0){
@@ -594,9 +600,19 @@
       +navCards.map(n=>'<button class="nav-card" onclick="switchPage(\''+n.p+'\')"><div class="nav-card-icon"><i class="ti '+n.icon+'"></i></div><div><div class="nav-card-t">'+n.t+'</div><div class="nav-card-d">'+n.d+'</div></div><i class="ti ti-chevron-right" style="margin-left:auto;color:var(--ink-mute)"></i></button>').join('')
       +'</div>';
     body.innerHTML=html;
+    loadDashMemberKpis();
   }
-
-  // ===== 회원 · 참여 통계 =====
+  let _dashMemberCache=null;
+  async function loadDashMemberKpis(){
+    try{
+      const s=_dashMemberCache || await api('member_stats'); _dashMemberCache=s;
+      const m=document.getElementById('dashMembers'); if(m) m.textContent=(s.profiles?s.profiles.total:0);
+      const f=document.getElementById('dashFavs'); if(f) f.textContent=(s.favorites?s.favorites.total:0);
+    }catch(e){
+      const m=document.getElementById('dashMembers'); if(m) m.textContent='—';
+      const f=document.getElementById('dashFavs'); if(f) f.textContent='—';
+    }
+  }
   let membersLoaded=false;
   async function loadMembers(){
     const body=document.getElementById('membersBody'); body.innerHTML='<div class="loading">불러오는 중…</div>';
@@ -646,26 +662,54 @@
     loadMemberList();
   }
 
+  let _memberListRaw=[];
   async function loadMemberList(){
     const box=document.getElementById('memberListBox'); if(!box) return;
     try{
       const r=await api('member_list');
-      const list=(r&&r.members)||[];
-      if(!list.length){ box.innerHTML='<div class="empty">아직 온보딩을 완료한 회원이 없어요</div>'; return; }
-      const fmt=iso=>{ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'); };
-      const region=m=>{ const s=SIDO_LABEL[m.region_sido]||m.region_sido||'—'; return m.region_sigungu?(s+' '+m.region_sigungu):s; };
-      let html='<div class="mtable"><div class="mhead"><div>이메일</div><div>가입일</div><div>지역</div><div>연령대</div><div>혼인</div><div>소득구간</div></div>';
-      html+=list.map(m=>'<div class="mrow">'
-        +'<div class="m-email" title="'+escapeHtml(m.email||'')+'">'+escapeHtml(m.email||'—')+'</div>'
-        +'<div>'+fmt(m.onboarded_at)+'</div>'
-        +'<div>'+escapeHtml(region(m))+'</div>'
-        +'<div>'+escapeHtml(AGE_LABEL[m.age_range]||m.age_range||'—')+'</div>'
-        +'<div>'+escapeHtml(MAR_LABEL[m.marriage_status]||m.marriage_status||'—')+'</div>'
-        +'<div>'+escapeHtml(INC_LABEL[m.income_range]||m.income_range||'—')+'</div>'
-        +'</div>').join('');
-      html+='</div>';
-      box.innerHTML=html;
+      _memberListRaw=(r&&r.members)||[];
+      if(!_memberListRaw.length){ box.innerHTML='<div class="empty">아직 온보딩을 완료한 회원이 없어요</div>'; return; }
+      box.innerHTML='<div class="mlist-controls">'
+        +'<div class="search-wrap" style="flex:1;min-width:180px"><i class="ti ti-search"></i><input class="search" id="mSearch" placeholder="이메일·지역 검색" oninput="renderMemberTable()"></div>'
+        +'<select class="sel" id="mSort" onchange="renderMemberTable()"><option value="new">가입 최신순</option><option value="old">가입 오래된순</option></select>'
+        +'<button class="sel" onclick="downloadMembersCsv()" title="CSV 파일로 내려받기"><i class="ti ti-download"></i> CSV</button>'
+        +'</div><div id="mTableBox"></div>';
+      renderMemberTable();
     }catch(e){ box.innerHTML='<div class="empty">회원 목록을 불러오지 못했어요: '+escapeHtml(e.message||String(e))+'</div>'; }
+  }
+  function _memRegion(m){ const s=SIDO_LABEL[m.region_sido]||m.region_sido||''; return m.region_sigungu?(s+' '+m.region_sigungu):(s||'—'); }
+  function _memFmtDate(iso){ if(!iso) return '—'; const d=new Date(iso); if(isNaN(d)) return '—'; return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'); }
+  function renderMemberTable(){
+    const box=document.getElementById('mTableBox'); if(!box) return;
+    const qEl=document.getElementById('mSearch'), sEl=document.getElementById('mSort');
+    const q=(qEl?qEl.value:'').trim().toLowerCase(), sort=(sEl?sEl.value:'new');
+    let list=_memberListRaw.slice();
+    if(q) list=list.filter(m=>((m.email||'').toLowerCase().includes(q))||_memRegion(m).toLowerCase().includes(q));
+    list.sort((a,b)=>{ const ta=Date.parse(a.onboarded_at||'')||0, tb=Date.parse(b.onboarded_at||'')||0; return sort==='old'?ta-tb:tb-ta; });
+    if(!list.length){ box.innerHTML='<div class="empty">검색 결과가 없어요</div>'; return; }
+    let html='<div class="mtable"><div class="mhead"><div>이메일</div><div>가입일</div><div>지역</div><div>연령대</div><div>혼인</div><div>소득구간</div></div>';
+    html+=list.map(m=>'<div class="mrow">'
+      +'<div class="m-email" title="'+escapeHtml(m.email||'')+'">'+escapeHtml(m.email||'—')+'</div>'
+      +'<div>'+_memFmtDate(m.onboarded_at)+'</div>'
+      +'<div>'+escapeHtml(_memRegion(m))+'</div>'
+      +'<div>'+escapeHtml(AGE_LABEL[m.age_range]||m.age_range||'—')+'</div>'
+      +'<div>'+escapeHtml(MAR_LABEL[m.marriage_status]||m.marriage_status||'—')+'</div>'
+      +'<div>'+escapeHtml(INC_LABEL[m.income_range]||m.income_range||'—')+'</div>'
+      +'</div>').join('');
+    html+='</div><div style="font-size:11.5px;color:var(--ink-mute);margin-top:8px">'+list.length+'명 표시</div>';
+    box.innerHTML=html;
+  }
+  function downloadMembersCsv(){
+    if(!_memberListRaw.length){ toast('내려받을 회원이 없어요'); return; }
+    const head=['이메일','가입일','지역','연령대','혼인','소득구간'];
+    const esc=v=>{ const s=(v==null?'':String(v)); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+    const rows=_memberListRaw.map(m=>[m.email||'', _memFmtDate(m.onboarded_at), _memRegion(m), AGE_LABEL[m.age_range]||m.age_range||'', MAR_LABEL[m.marriage_status]||m.marriage_status||'', INC_LABEL[m.income_range]||m.income_range||''].map(esc).join(','));
+    const csv='\uFEFF'+head.join(',')+'\n'+rows.join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download='pinhome_members_'+new Date().toISOString().slice(0,10)+'.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('CSV를 내려받았어요');
   }
 
   // ===== 외부 기준값 =====

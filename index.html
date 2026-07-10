@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.44 (저작권 문구 화면 확장)</title>
+<title>PinHome · v0.45 (마감 임박 배지)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1527,6 +1527,11 @@
     color: var(--ink-mute);
     letter-spacing: 0;
   }
+  .ddl-badge{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;vertical-align:middle;letter-spacing:-.01em;}
+  .ddl-today{background:rgba(255,107,107,.15);color:#FF6B6B;}
+  .ddl-soon{background:rgba(245,166,35,.16);color:var(--warn,#F5A623);}
+  .ddl-far{background:var(--em-soft);color:var(--em-text);}
+  .ddl-closed{background:rgba(150,150,150,.15);color:var(--ink-mute);}
 
   /* ============================================ */
   /* ★ v0.9 NEW — Onboarding Fullscreen Flow */
@@ -5384,6 +5389,24 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     }
   }
 
+  // ★ v0.45 — 신청 마감 D-day 배지 (정책 data.application_deadline: 'YYYY-MM-DD')
+  function deadlineInfo(policy){
+    const raw = policy && policy.application_deadline;
+    if(!raw) return null;
+    const d = new Date(String(raw) + 'T23:59:59');
+    if(isNaN(d)) return null;
+    const days = Math.floor((d - new Date()) / 86400000);
+    if(days < 0) return { text:'마감', cls:'closed', days };
+    if(days === 0) return { text:'오늘 마감', cls:'today', days };
+    if(days <= 7) return { text:'D-'+days+' 마감 임박', cls:'soon', days };
+    if(days <= 30) return { text:'D-'+days, cls:'far', days };
+    return null;
+  }
+  function deadlineBadge(policy){
+    const info = deadlineInfo(policy);
+    return info ? '<span class="ddl-badge ddl-'+info.cls+'">'+info.text+'</span>' : '';
+  }
+
   function renderPolicyRow(result) {
     const policy = window.PinHomePolicies.find(p => p.id === result.policy_id);
     const amount = result.applied_amount ? result.applied_amount.display_text : '';
@@ -5453,7 +5476,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
         </div>
         <div class="row-body">
           <div class="row-cat">${cat} · ${policy.source_org}</div>
-          <div class="row-title">${policy.title}<span class="row-status">${statusLabel}</span></div>
+          <div class="row-title">${policy.title}<span class="row-status">${statusLabel}</span>${deadlineBadge(policy)}</div>
           <div class="row-desc">${desc}</div>
         </div>
         <div class="row-rate">
@@ -6042,7 +6065,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
         </div>
         <div class="row-body">
           <div class="row-cat">${cat} · ${policy.source_org}</div>
-          <div class="row-title">${policy.title}<span class="row-status">${statusLabel}</span></div>
+          <div class="row-title">${policy.title}<span class="row-status">${statusLabel}</span>${deadlineBadge(policy)}</div>
           <div class="row-desc">${savedText}</div>
         </div>
         <div class="row-amt">
@@ -6668,7 +6691,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     return `
       <div class="detail-header">
         ${statusBlock}
-        <div class="detail-cat">${cat} · ${policy.source_org}</div>
+        <div class="detail-cat">${cat} · ${policy.source_org}${deadlineBadge(policy)}</div>
         <h1 class="detail-title">${policy.title}</h1>
         <div class="detail-source">${policy.short_desc || ''}</div>
       </div>
