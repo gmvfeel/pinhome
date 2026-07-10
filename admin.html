@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.6 (외부 기준값)</title>
+<title>PinHome 백오피스 · v0.8 (대시보드·가입추이·컬럼·로그인)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -21,18 +21,19 @@
   button{font-family:inherit;cursor:pointer;}
   input,select,textarea{font-family:inherit;}
 
-  .login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;}
-  .login-card{width:100%;max-width:360px;text-align:center;}
-  .login-mark{width:56px;height:56px;margin:0 auto 18px;background:var(--em);border-radius:16px;display:flex;align-items:center;justify-content:center;}
+  .login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(1100px 560px at 50% -8%, rgba(0,217,163,.12), transparent 62%), var(--bg);}
+  .login-card{width:100%;max-width:380px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:42px 34px 30px;box-shadow:0 24px 70px rgba(0,0,0,.45);}
+  .login-mark{width:56px;height:56px;margin:0 auto 20px;background:var(--em);border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px var(--em-soft),0 14px 34px rgba(0,217,163,.28);}
   .login-mark::after{content:'';width:18px;height:18px;background:var(--bg);border-radius:50%;}
-  .login-title{font-size:19px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+  .login-title{font-size:20px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
   .login-sub{font-size:13px;color:var(--ink-mute);margin-bottom:26px;}
-  .login-input{width:100%;padding:14px 16px;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);font-size:15px;outline:none;transition:border-color .15s;}
-  .login-input:focus{border-color:var(--em-line);}
-  .login-btn{width:100%;margin-top:12px;padding:14px;background:var(--em);color:#04211A;border:none;border-radius:12px;font-size:15px;font-weight:800;transition:transform .12s;}
-  .login-btn:hover{transform:translateY(-1px);}
-  .login-btn:disabled{opacity:.6;cursor:default;transform:none;}
+  .login-input{width:100%;padding:14px 16px;background:var(--bg);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);font-size:15px;outline:none;transition:border-color .15s,box-shadow .15s;}
+  .login-input:focus{border-color:var(--em-line);box-shadow:0 0 0 3px var(--em-soft);}
+  .login-btn{width:100%;margin-top:12px;padding:14px;background:var(--em);color:#04211A;border:none;border-radius:12px;font-size:15px;font-weight:800;transition:transform .12s,box-shadow .12s;}
+  .login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,217,163,.3);}
+  .login-btn:disabled{opacity:.6;cursor:default;transform:none;box-shadow:none;}
   .login-err{margin-top:14px;font-size:13px;color:#FF6B6B;min-height:18px;}
+  .login-foot{margin-top:22px;font-size:11px;color:var(--ink-mute);letter-spacing:.01em;}
 
   .app{display:none;min-height:100vh;}
   .app.on{display:flex;}
@@ -73,7 +74,7 @@
   .sel:focus{border-color:var(--em-line);}
 
   .table{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
-  .thead,.trow{display:grid;grid-template-columns:2.6fr 1fr 1fr 1.1fr;gap:10px;align-items:center;}
+  .thead,.trow{display:grid;grid-template-columns:2fr 1.3fr 0.85fr 0.85fr 0.85fr 1fr;gap:10px;align-items:center;}
   .thead>div,.trow>div{min-width:0;}
   .thead{padding:12px 18px;background:rgba(255,255,255,.03);color:var(--ink-mute);font-size:11.5px;font-weight:600;}
   .trow{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;cursor:pointer;}
@@ -81,6 +82,7 @@
   .t-title{color:var(--ink);font-weight:500;}
   .t-id{color:var(--ink-mute);font-size:11px;margin-top:2px;word-break:break-all;}
   .t-cat{color:var(--ink-soft);}
+  .t-org,.t-asof{color:var(--ink-soft);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pill{display:inline-flex;align-items:center;font-size:11.5px;padding:3px 10px;border-radius:20px;}
   .pill.req{background:var(--em-soft);color:var(--em);}
   .pill.opt{background:var(--amber-soft);color:var(--amber);}
@@ -105,6 +107,12 @@
   .kpi-value{font-size:26px;font-weight:800;letter-spacing:-.02em;}
   .kpi-value.em{color:var(--em);}
   .kpi-value.amber{color:var(--amber);}
+  .nav-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .nav-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-align:left;color:var(--ink);width:100%;transition:border-color .12s,background .12s;}
+  .nav-card:hover{border-color:var(--em-line);background:rgba(255,255,255,.02);}
+  .nav-card-icon{width:40px;height:40px;border-radius:10px;background:var(--em-soft);color:var(--em);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .nav-card-t{font-size:14px;font-weight:700;}
+  .nav-card-d{font-size:12px;color:var(--ink-mute);margin-top:2px;}
   .stat-section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
   .stat-title{font-size:14px;font-weight:700;margin-bottom:16px;}
   .bar-row{display:grid;grid-template-columns:120px 1fr 44px;gap:12px;align-items:center;margin-bottom:10px;}
@@ -114,7 +122,7 @@
   .bar-fill.amber{background:var(--amber);}
   .bar-fill.mute{background:var(--line-strong);}
   .bar-val{font-size:12.5px;color:var(--ink-soft);text-align:right;}
-  @media (max-width:720px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} .bar-row{grid-template-columns:90px 1fr 40px;} }
+  @media (max-width:720px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} .bar-row{grid-template-columns:90px 1fr 40px;} .nav-grid{grid-template-columns:1fr;} }
 
   /* 편집기 */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -154,7 +162,7 @@
     .main{padding:18px 16px 50px;}
     .thead{display:none;}
     .trow{grid-template-columns:1fr auto;row-gap:8px;padding:14px 16px;}
-    .trow .t-cat,.trow .t-income{grid-column:1;font-size:12px;}
+    .trow .t-cat,.trow .t-income,.trow .t-org,.trow .t-asof{grid-column:1;font-size:12px;}
     .editor{width:100%;}
     .wrow{grid-template-columns:1fr;row-gap:6px;}
   }
@@ -166,10 +174,11 @@
   <div class="login-card">
     <div class="login-mark"></div>
     <div class="login-title">PinHome 백오피스</div>
-    <div class="login-sub">관리자 비밀번호를 입력해주세요</div>
-    <input type="password" class="login-input" id="pwInput" placeholder="비밀번호" autocomplete="current-password" />
+    <div class="login-sub">정책·회원을 관리하는 관리자 전용 공간이에요</div>
+    <input type="password" class="login-input" id="pwInput" placeholder="관리자 비밀번호" autocomplete="current-password" />
     <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
     <div class="login-err" id="loginErr"></div>
+    <div class="login-foot">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠</div>
   </div>
 </div>
 
@@ -177,18 +186,30 @@
   <aside class="side">
     <div class="side-brand"><div class="side-logo"></div><div class="side-name">PinHome 관리</div></div>
     <nav class="side-nav">
-      <button class="side-item on" id="nav-list" onclick="switchPage('list')"><i class="ti ti-list-details"></i>정책 목록</button>
+      <button class="side-item on" id="nav-dashboard" onclick="switchPage('dashboard')"><i class="ti ti-layout-dashboard"></i>대시보드</button>
+      <button class="side-item" id="nav-list" onclick="switchPage('list')"><i class="ti ti-list-details"></i>정책 목록</button>
       <button class="side-item" onclick="toast('정책 행을 클릭하면 편집 창이 열려요')"><i class="ti ti-edit"></i>정책 편집</button>
       <button class="side-item" id="nav-convert" onclick="switchPage('convert')"><i class="ti ti-sparkles"></i>AI 변환</button>
       <button class="side-item" id="nav-refs" onclick="switchPage('refs')"><i class="ti ti-adjustments"></i>기준값</button>
       <button class="side-item" id="nav-stats" onclick="switchPage('stats')"><i class="ti ti-chart-bar"></i>통계</button>
-      <button class="side-item soon" onclick="soon()"><i class="ti ti-users"></i>회원<span class="side-badge">준비 중</span></button>
+      <button class="side-item" id="nav-members" onclick="switchPage('members')"><i class="ti ti-users"></i>회원</button>
     </nav>
     <div class="side-foot"><button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i>로그아웃</button></div>
   </aside>
 
   <main class="main">
-  <div id="page-list">
+  <div id="page-dashboard">
+    <div class="page-head">
+      <div>
+        <div class="page-title">대시보드</div>
+        <div class="page-sub" id="dashSub">한눈에 보는 운영 현황</div>
+      </div>
+      <div class="head-actions"><button class="sel" onclick="loadPolicies().then(()=>renderDashboard())" title="새로고침"><i class="ti ti-refresh"></i></button></div>
+    </div>
+    <div id="dashBody"><div class="loading">불러오는 중…</div></div>
+  </div><!-- /page-dashboard -->
+
+  <div id="page-list" style="display:none">
     <div class="page-head">
       <div>
         <div class="page-title">정책 목록</div>
@@ -211,7 +232,7 @@
     </div>
 
     <div class="table">
-      <div class="thead"><div>제목</div><div>카테고리</div><div>소득조건</div><div>상태</div></div>
+      <div class="thead"><div>제목</div><div>소관기관</div><div>카테고리</div><div>기준일</div><div>소득조건</div><div>상태</div></div>
       <div id="rows"><div class="loading">불러오는 중…</div></div>
     </div>
   </div><!-- /page-list -->
@@ -265,6 +286,14 @@
       <div id="refsMsg" style="font-size:12.5px;color:var(--ink-mute);margin-top:12px"></div>
     </div>
   </div><!-- /page-refs -->
+
+  <div id="page-members" style="display:none">
+    <div class="page-head">
+      <div><div class="page-title">회원 · 참여 통계</div><div class="page-sub">개인 식별정보(이메일·이름) 없이 합산 통계만 표시합니다</div></div>
+      <div class="head-actions"><button class="sel" onclick="loadMembers()" title="새로고침"><i class="ti ti-refresh"></i></button></div>
+    </div>
+    <div id="membersBody"><div class="loading">불러오는 중…</div></div>
+  </div><!-- /page-members -->
   </main>
 </div>
 
@@ -376,7 +405,7 @@
     finally{ btn.disabled=false; btn.textContent='로그인'; }
   }
   function logout(){ sessionStorage.removeItem('ph_admin_pw'); document.getElementById('app').classList.remove('on'); document.getElementById('login').style.display='flex'; document.getElementById('pwInput').value=''; closeEditor(); }
-  function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.add('on'); if(!sb) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); loadPolicies(); }
+  function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.add('on'); if(!sb) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); loadPolicies().then(()=>switchPage('dashboard')); }
 
   async function loadPolicies(){
     document.getElementById('rows').innerHTML='<div class="loading">불러오는 중…</div>';
@@ -417,7 +446,9 @@
       const incPill = inc==='required'?'<span class="pill req">필수</span>':inc==='optional'?'<span class="pill opt">선택</span>':'<span class="pill none">없음</span>';
       return '<div class="trow" onclick="openEditor('+idx+')">'
         +'<div><div class="t-title">'+escapeHtml(p.title||'(제목 없음)')+'</div><div class="t-id">'+escapeHtml(p.id||'')+'</div></div>'
+        +'<div class="t-org">'+escapeHtml((p.data&&p.data.source_org)||'—')+'</div>'
         +'<div class="t-cat">'+catLabel(p.category)+'</div>'
+        +'<div class="t-asof">'+escapeHtml(p.as_of||(p.data&&p.data.as_of)||'—')+'</div>'
         +'<div class="t-income">'+incPill+'</div>'
         +'<div class="status-cell"><button class="toggle '+(p.is_active?'on':'')+'" onclick="event.stopPropagation();toggleActive('+idx+')"></button><span>'+(p.is_active?'활성':'비활성')+'</span></div>'
         +'</div>';
@@ -520,11 +551,90 @@
   // ===== 페이지 전환 =====
   let watchRows=[], publishedMap={}, watchLoaded=false, draftObj=null, draftSid=null;
   function switchPage(name){
-    const pages={list:'page-list',convert:'page-convert',stats:'page-stats',refs:'page-refs'}, navs={list:'nav-list',convert:'nav-convert',stats:'nav-stats',refs:'nav-refs'};
+    const pages={dashboard:'page-dashboard',list:'page-list',convert:'page-convert',stats:'page-stats',refs:'page-refs',members:'page-members'}, navs={dashboard:'nav-dashboard',list:'nav-list',convert:'nav-convert',stats:'nav-stats',refs:'nav-refs',members:'nav-members'};
     for(const k in pages){ document.getElementById(pages[k]).style.display=(k===name)?'':'none'; const n=document.getElementById(navs[k]); if(n) n.classList.toggle('on',k===name); }
+    if(name==='dashboard') renderDashboard();
     if(name==='convert' && !watchLoaded) loadWatch();
     if(name==='stats') renderStats();
     if(name==='refs' && !refsLoaded) loadRefs();
+    if(name==='members' && !membersLoaded) loadMembers();
+  }
+
+  // ===== 대시보드 =====
+  function renderDashboard(){
+    const body=document.getElementById('dashBody');
+    if(!policies.length){ body.innerHTML='<div class="loading">정책 데이터를 불러오는 중…</div>'; return; }
+    const total=policies.length, active=policies.filter(p=>p.is_active).length, inactive=total-active;
+    const optN=policies.filter(p=>incomeState(p)==='optional').length;
+    const cards=[
+      {label:'전체 정책', value:total, cls:''},
+      {label:'노출 중(활성)', value:active, cls:'em'},
+      {label:'숨김(비활성)', value:inactive, cls:''},
+      {label:'소득조건 ‘선택’ 주의', value:optN, cls:optN>0?'amber':''},
+    ];
+    let html='<div class="kpi-grid">'+cards.map(c=>'<div class="kpi-card"><div class="kpi-label">'+c.label+'</div><div class="kpi-value '+c.cls+'">'+c.value+'</div></div>').join('')+'</div>';
+    if(optN>0){
+      html+='<div class="banner" style="margin-bottom:16px"><i class="ti ti-alert-triangle"></i><span style="flex:1">소득조건이 ‘선택’으로 저장된 정책이 '+optN+'개 있어요. 정책 목록에서 한 번에 바로잡을 수 있어요.</span><button class="banner-btn" onclick="switchPage(\'list\')">정책 목록으로</button></div>';
+    }
+    const navCards=[
+      {p:'list', icon:'ti-list-details', t:'정책 목록', d:'정책 편집·노출 관리'},
+      {p:'convert', icon:'ti-sparkles', t:'AI 변환', d:'신규 정책 변환·검수·발행'},
+      {p:'refs', icon:'ti-adjustments', t:'기준값', d:'기준 중위소득 등 수정'},
+      {p:'stats', icon:'ti-chart-bar', t:'통계', d:'정책 데이터 분포'},
+      {p:'members', icon:'ti-users', t:'회원', d:'참여 통계 보기'},
+    ];
+    html+='<div class="stat-title" style="margin:6px 0 12px">바로가기</div><div class="nav-grid">'
+      +navCards.map(n=>'<button class="nav-card" onclick="switchPage(\''+n.p+'\')"><div class="nav-card-icon"><i class="ti '+n.icon+'"></i></div><div><div class="nav-card-t">'+n.t+'</div><div class="nav-card-d">'+n.d+'</div></div><i class="ti ti-chevron-right" style="margin-left:auto;color:var(--ink-mute)"></i></button>').join('')
+      +'</div>';
+    body.innerHTML=html;
+  }
+
+  // ===== 회원 · 참여 통계 =====
+  let membersLoaded=false;
+  async function loadMembers(){
+    const body=document.getElementById('membersBody'); body.innerHTML='<div class="loading">불러오는 중…</div>';
+    try{ const s=await api('member_stats'); membersLoaded=true; renderMembers(s); }
+    catch(e){ body.innerHTML='<div class="empty">불러오지 못했어요: '+(e.message||e)+'</div>'; }
+  }
+  function distSection(title, obj, total, labeler){
+    if(!obj) return '';
+    const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+    if(!entries.length) return '';
+    const rows=entries.map(([k,v])=>bar(labeler?labeler(k):k, v, total||1, '')).join('');
+    return '<div class="stat-section"><div class="stat-title">'+title+'</div>'+rows+'</div>';
+  }
+  function renderMembers(s){
+    const body=document.getElementById('membersBody');
+    const p=s.profiles, f=s.favorites;
+    if(!p && !f){ body.innerHTML='<div class="empty">표시할 데이터가 없어요</div>'; return; }
+    const titleMap={}; policies.forEach(x=>{ titleMap[x.id]=x.title||(x.data&&x.data.title)||x.id; });
+    let html='<div class="kpi-grid">'
+      +'<div class="kpi-card"><div class="kpi-label">온보딩 완료 회원</div><div class="kpi-value em">'+(p?p.total:'—')+'</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">최근 7일 신규</div><div class="kpi-value">'+(p?p.new_7d:'—')+'</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">최근 30일 신규</div><div class="kpi-value">'+(p?p.new_30d:'—')+'</div></div>'
+      +'<div class="kpi-card"><div class="kpi-label">즐겨찾기 총 건수</div><div class="kpi-value">'+(f?f.total:'—')+'</div></div>'
+      +'</div>';
+    if(p && p.by_month){
+      const months=Object.keys(p.by_month).sort();
+      const vals=months.map(m=>p.by_month[m]);
+      const max=Math.max(1,...vals);
+      const rows=months.map(m=>bar(parseInt(m.split('-')[1],10)+'월', p.by_month[m], max, '')).join('');
+      html+='<div class="stat-section"><div class="stat-title">최근 6개월 가입 추이</div>'+rows+'</div>';
+    }
+    if(f && f.top && f.top.length){
+      const rows=f.top.map(t=>bar(titleMap[t.policy_id]||t.policy_id, t.count, f.top[0].count||1, 'amber')).join('');
+      html+='<div class="stat-section"><div class="stat-title">인기 정책 (즐겨찾기 많은 순 · 상위 10)</div>'
+        +'<div style="font-size:12px;color:var(--ink-mute);margin-bottom:12px">즐겨찾기한 회원 수: '+(f.distinct_users||0)+'명</div>'+rows+'</div>';
+    }
+    if(p){
+      html+=distSection('지역 분포', p.by_region, p.total, c=>SIDO_LABEL[c]||c);
+      html+=distSection('연령대 분포', p.by_age, p.total, null);
+      html+=distSection('혼인 상태', p.by_marriage, p.total, null);
+      html+=distSection('주거 상태', p.by_housing, p.total, null);
+      html+=distSection('소득 구간', p.by_income, p.total, null);
+      html+='<div class="stat-section"><div class="stat-title">자녀</div>'+bar('자녀 있는 회원', p.with_children, p.total, '')+'</div>';
+    }
+    body.innerHTML=html;
   }
 
   // ===== 외부 기준값 =====
