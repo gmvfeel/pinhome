@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.41 (비밀번호 변경)</title>
+<title>PinHome · v0.43 (하단 중복 CTA 제거 · 저작권 표기)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2404,15 +2404,7 @@
       <div class="sheet" id="policyListNo" style="display:none"></div>
     </div>
 
-    <!-- CTA -->
-    <div class="cta" id="refineCta">
-      <div class="cta-eyebrow">정확도를 높이고 싶다면</div>
-      <h2 class="cta-title">조건을 <em>조금만</em> 더 알려주세요</h2>
-      <p class="cta-desc" id="refineCtaDesc">주거 상태와 소득을 입력하면 매칭 점수가 더 정확해져요.</p>
-      <button class="cta-btn" onclick="go('check')">조건 추가하기<i class="ti ti-arrow-right"></i></button>
-    </div>
-
-    <div class="footer">PinHome · v0.32 · 예비 정책 데이터를 서버 최신값과 일치</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved.</div>
   </section>
 
   <!-- ============================================ -->
@@ -5900,23 +5892,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
 
   // 정확도 업그레이드 카드 — 입력한 항목은 '입력 완료'로 표시
   function updateUpgradeCards() {
-    const filledMap = {
-      children: !!userProfile.children_count,
-      housing: !!userProfile.housing_status,
-      income: !!userProfile.income,
-    };
-    document.querySelectorAll('.upgrade-item[data-field]').forEach(item => {
-      const field = item.dataset.field;
-      const cta = item.querySelector('.upgrade-item-cta');
-      if (!cta) return;
-      if (filledMap[field]) {
-        item.classList.add('done');
-        cta.innerHTML = '입력 완료 <i class="ti ti-check"></i>';
-      } else {
-        item.classList.remove('done');
-        cta.innerHTML = '입력하기 <i class="ti ti-arrow-right"></i>';
-      }
-    });
+    // (구버전) 신규 항목 6개까지 처리하는 updateUpgradeCard로 위임 — 덮어쓰기 방지
+    updateUpgradeCard();
   }
 
   // ★ v0.25 — '결과' 화면을 매칭 1위 정책으로 동적 렌더 (C-2-b)
