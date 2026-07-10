@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.49 (마감 캘린더·공유·PWA·혜택요약)</title>
+<title>PinHome · v0.50 (하단메뉴 정렬·아이콘 수정)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -250,6 +250,7 @@
   }
   .mob-nav-item i { font-size: 20px; line-height: 1; }
   .mob-nav-item.on { color: var(--em); }
+  .nav-hidden { display: none !important; }
 
   /* 위로가기 버튼 */
   .to-top {
@@ -2240,7 +2241,7 @@
       <button class="nav-item on" data-screen="dash">대시보드</button>
       <button class="nav-item" data-screen="check">간편 확인</button>
       <button class="nav-item" data-screen="result">결과</button>
-      <button class="nav-item" data-screen="mypage" style="display:none">마이</button>
+      <button class="nav-item nav-hidden" data-screen="mypage">마이</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
       <button class="theme-toggle" id="themeToggle" aria-label="테마 전환">
@@ -2661,7 +2662,7 @@
   <button class="mob-nav-item on" data-screen="dash"><i class="ti ti-layout-dashboard"></i><span>대시보드</span></button>
   <button class="mob-nav-item" data-screen="check"><i class="ti ti-bolt"></i><span>확인</span></button>
   <button class="mob-nav-item" data-screen="result"><i class="ti ti-circle-check"></i><span>결과</span></button>
-  <button class="mob-nav-item" data-screen="mypage" style="display:none"><i class="ti ti-user"></i><span>마이</span></button>
+  <button class="mob-nav-item nav-hidden" data-screen="mypage"><i class="ti ti-user"></i><span>마이</span></button>
 </nav>
 
 <!-- 위로가기 -->
@@ -7145,8 +7146,9 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     const bell = document.getElementById('notifBell');
     if (bell) bell.style.display = pinhomeUser ? '' : 'none';
     // ★ v0.35 — '마이' 메뉴(PC 상단 + 모바일 하단)는 로그인했을 때만 표시
+    // (display 직접 변경 대신 클래스 토글 — 다시 보일 때 flex 정렬이 깨지지 않게)
     document.querySelectorAll('[data-screen="mypage"]').forEach(el => {
-      el.style.display = pinhomeUser ? '' : 'none';
+      el.classList.toggle('nav-hidden', !pinhomeUser);
     });
     // 로그아웃 상태인데 '마이' 화면을 보고 있으면 대시보드로 돌려보냄
     if (!pinhomeUser) {
