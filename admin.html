@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.11 (정책목록 마감일 컬럼)</title>
+<title>PinHome 백오피스 · v0.12 (신청 서류 입력)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -192,7 +192,7 @@
     <input type="password" class="login-input" id="pwInput" placeholder="관리자 비밀번호" autocomplete="current-password" />
     <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
     <div class="login-err" id="loginErr"></div>
-    <div class="login-foot">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠</div>
+    <div class="login-foot">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠 · v0.12</div>
   </div>
 </div>
 
@@ -339,6 +339,7 @@
     <div class="field"><label>소관기관</label><input id="edF_source_org" oninput="onField('source_org',this.value)"></div>
     <div class="field"><label>기준일 (as_of)</label><input id="edF_as_of" oninput="onField('as_of',this.value)"></div>
     <div class="field"><label>신청 마감일 (선택) — 앱에 ‘마감 임박’ 배지로 표시</label><input id="edF_application_deadline" type="date" oninput="onField('application_deadline',this.value)"></div>
+    <div class="field"><label>신청 서류 (한 줄에 하나씩) — 앱 상세에 체크리스트로 표시</label><textarea id="edF_required_documents" rows="5" placeholder="예)&#10;주민등록등본&#10;가족관계증명서&#10;소득금액증명원" oninput="onDocsField(this.value)"></textarea></div>
     <button class="adv-toggle" onclick="toggleAdv()"><i class="ti ti-code"></i><span id="advLabel">고급 편집 (전체 JSON) 열기</span></button>
     <div class="field" id="edAdv" style="display:none">
       <textarea id="edJson" rows="18" spellcheck="false" oninput="onJsonEdit()"></textarea>
@@ -499,6 +500,7 @@
     setF('title',cur.title); setF('category',cur.category); setF('short_desc',cur.short_desc);
     setF('official_url',cur.official_url); setF('source_org',cur.source_org); setF('as_of',cur.as_of);
     setF('application_deadline',cur.application_deadline);
+    setDocsF(cur.required_documents);
     updateEditorActive(p.is_active);
     document.getElementById('edFixBox').style.display = incomeState(p)==='optional' ? 'block':'none';
     document.getElementById('edReconv').style.display = (p.id||'').startsWith('auto_') ? 'block':'none';
@@ -509,6 +511,8 @@
   }
   function closeEditor(){ document.getElementById('edOverlay').classList.remove('on'); document.getElementById('editor').classList.remove('on'); curIdx=-1; cur=null; }
   function setF(k,v){ const el=document.getElementById('edF_'+k); if(el) el.value = (v==null?'':v); }
+  function setDocsF(arr){ const el=document.getElementById('edF_required_documents'); if(el) el.value = Array.isArray(arr)? arr.join('\n') : ''; }
+  function onDocsField(v){ if(!cur) return; const arr=String(v||'').split('\n').map(s=>s.trim()).filter(Boolean); if(arr.length) cur.required_documents=arr; else delete cur.required_documents; syncJson(); }
   function onField(k,v){ if(!cur) return; cur[k]=v; if(k==='title') document.getElementById('edTitle').textContent=v||'(제목 없음)'; syncJson(); }
   function updateEditorActive(on){ const t=document.getElementById('edActive'); t.classList.toggle('on',!!on); document.getElementById('edActiveLabel').textContent=on?'활성':'비활성'; }
   function toggleActiveFromEditor(){ if(curIdx>=0) toggleActive(curIdx); }
@@ -526,6 +530,7 @@
       setF('title',cur.title); setF('category',cur.category); setF('short_desc',cur.short_desc);
       setF('official_url',cur.official_url); setF('source_org',cur.source_org); setF('as_of',cur.as_of);
       setF('application_deadline',cur.application_deadline);
+      setDocsF(cur.required_documents);
       document.getElementById('edTitle').textContent=cur.title||'(제목 없음)';
     }catch(e){ err.textContent='JSON 형식 오류: '+e.message; }
   }

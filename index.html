@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.58 (모바일 상단바 넘침 수정)</title>
+<title>PinHome · v0.59 (신청 서류 체크리스트)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1606,6 +1606,21 @@
   .rmd-opts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
   .rmd-opt{flex:1;min-width:60px;background:var(--bg);border:1px solid var(--line);color:var(--ink-soft);border-radius:9px;padding:9px 6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
   .rmd-opt.on{background:var(--em);color:var(--on-em);border-color:var(--em);}
+  /* v0.59 신청 서류 체크리스트 */
+  .doc-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:18px 0;}
+  .doc-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:800;color:var(--ink);}
+  .doc-head i{color:var(--em-text);margin-right:6px;}
+  .doc-progress{font-size:12px;font-weight:700;color:var(--em-text);}
+  .doc-list{margin-top:10px;display:flex;flex-direction:column;}
+  .doc-item{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--line);cursor:pointer;}
+  .doc-item:first-child{border-top:none;}
+  .doc-item input{position:absolute;opacity:0;width:0;height:0;}
+  .doc-box{width:22px;height:22px;border:2px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+  .doc-box i{font-size:14px;color:var(--on-em);opacity:0;}
+  .doc-item.on .doc-box{background:var(--em);border-color:var(--em);}
+  .doc-item.on .doc-box i{opacity:1;}
+  .doc-text{font-size:14px;color:var(--ink);line-height:1.4;}
+  .doc-item.on .doc-text{color:var(--ink-soft);text-decoration:line-through;}
 
   /* ============================================ */
   /* ★ v0.9 NEW — Onboarding Fullscreen Flow */
@@ -2518,7 +2533,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.58</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
   </section>
 
   <!-- ============================================ -->
@@ -2627,7 +2642,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.58</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
   </section>
 
   <!-- ============================================ -->
@@ -2676,7 +2691,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.58</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
   </section>
 
   <!-- ============================================ -->
@@ -2705,7 +2720,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.58</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
   </section>
 
 </div>
@@ -7063,6 +7078,43 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     if (window.openDetail) window.openDetail(policyId);   // 카드 갱신
   };
 
+  // ★ v0.59 — 신청 서류 체크리스트 (체크 상태는 기기에 저장 localStorage)
+  function loadAllDocChecks(){ try { return JSON.parse(localStorage.getItem('pinhome_doc_checks') || '{}') || {}; } catch(e){ return {}; } }
+  function saveAllDocChecks(o){ try { localStorage.setItem('pinhome_doc_checks', JSON.stringify(o)); } catch(e){} }
+  function loadDocChecks(pid){ return loadAllDocChecks()[pid] || {}; }
+
+  function docChecklistBlock(policy){
+    const docs = policy.required_documents;
+    if (!Array.isArray(docs) || !docs.length) return '';
+    const checks = loadDocChecks(policy.id);
+    const done = docs.filter(d => checks[d]).length;
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+    const items = docs.map((d, i) => {
+      const on = !!checks[d];
+      return '<label class="doc-item' + (on ? ' on' : '') + '">'
+        + '<input type="checkbox" ' + (on ? 'checked' : '') + ' onchange="toggleDoc(\'' + policy.id + '\',' + i + ',this)">'
+        + '<span class="doc-box"><i class="ti ti-check"></i></span>'
+        + '<span class="doc-text">' + esc(d) + '</span>'
+        + '</label>';
+    }).join('');
+    return '<div class="doc-card">'
+      + '<div class="doc-head"><span><i class="ti ti-clipboard-list"></i>신청 서류</span><span class="doc-progress">' + done + ' / ' + docs.length + ' 준비</span></div>'
+      + '<div class="doc-list">' + items + '</div>'
+      + '</div>';
+  }
+
+  window.toggleDoc = function(policyId, idx, cb){
+    const p = window.PinHomePolicies.find(x => x.id === policyId);
+    if (!p || !Array.isArray(p.required_documents)) return;
+    const doc = p.required_documents[idx]; if (doc == null) return;
+    const all = loadAllDocChecks(); all[policyId] = all[policyId] || {};
+    if (cb.checked) all[policyId][doc] = true; else delete all[policyId][doc];
+    saveAllDocChecks(all);
+    const item = cb.closest('.doc-item'); if (item) item.classList.toggle('on', cb.checked);
+    const card = cb.closest('.doc-card');
+    if (card) { const done = p.required_documents.filter(d => all[policyId][d]).length; const prog = card.querySelector('.doc-progress'); if (prog) prog.textContent = done + ' / ' + p.required_documents.length + ' 준비'; }
+  };
+
   function renderDetailHTML(policy, result) {
     // 상태 라벨
     let statusBlock = '';
@@ -7208,6 +7260,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       ${bonusAppliedBlock}
 
       ${reminderBlock(policy)}
+
+      ${docChecklistBlock(policy)}
 
       <div class="detail-warn">
         매칭 결과는 공개된 자격 요건 기반의 추정값이며, 최종 자격 판정은 발급기관의 심사에 따릅니다. 신청 전 반드시 공식 사이트에서 확인하세요.
