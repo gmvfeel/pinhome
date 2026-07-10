@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.36 (외부 기준값 서버 연동)</title>
+<title>PinHome · v0.39 (추가 조건 4종: 생애최초·임신·노부모부양·거주기간)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -244,6 +244,31 @@
   }
   .mob-nav-item i { font-size: 20px; line-height: 1; }
   .mob-nav-item.on { color: var(--em); }
+
+  /* 위로가기 버튼 */
+  .to-top {
+    position: fixed;
+    right: 16px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    z-index: 90;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--em-line, rgba(0,217,163,.3));
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--em);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.35);
+    opacity: 0; transform: translateY(12px); pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, background-color .15s ease, color .15s ease;
+  }
+  .to-top.on { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .to-top:hover { background: var(--em); color: #04211A; }
+  @media (min-width: 1024px) {
+    .to-top { right: 24px; bottom: 24px; width: 48px; height: 48px; }
+  }
 
   /* ============================================ */
   /* MAIN STAGE */
@@ -2294,6 +2319,39 @@
           </div>
           <div class="upgrade-item-cta">입력하기 <i class="ti ti-arrow-right"></i></div>
         </div>
+
+        <div class="upgrade-item" data-field="firstbuyer" onclick="openModal('FirstBuyer')">
+          <div class="upgrade-item-left">
+            <div class="upgrade-item-icon"><i class="ti ti-key"></i></div>
+            <div class="upgrade-item-body">
+              <div class="upgrade-item-label">생애최초 여부</div>
+              <div class="upgrade-item-meta">청약·대출 우대 · 20초</div>
+            </div>
+          </div>
+          <div class="upgrade-item-cta">입력하기 <i class="ti ti-arrow-right"></i></div>
+        </div>
+
+        <div class="upgrade-item" data-field="elderparent" onclick="openModal('ElderParent')">
+          <div class="upgrade-item-left">
+            <div class="upgrade-item-icon"><i class="ti ti-users-group"></i></div>
+            <div class="upgrade-item-body">
+              <div class="upgrade-item-label">노부모 부양</div>
+              <div class="upgrade-item-meta">특별공급 우대 · 20초</div>
+            </div>
+          </div>
+          <div class="upgrade-item-cta">입력하기 <i class="ti ti-arrow-right"></i></div>
+        </div>
+
+        <div class="upgrade-item" data-field="residence" onclick="openModal('Residence')">
+          <div class="upgrade-item-left">
+            <div class="upgrade-item-icon"><i class="ti ti-map-pin"></i></div>
+            <div class="upgrade-item-body">
+              <div class="upgrade-item-label">거주 기간</div>
+              <div class="upgrade-item-meta">지자체 정책 · 20초</div>
+            </div>
+          </div>
+          <div class="upgrade-item-cta">입력하기 <i class="ti ti-arrow-right"></i></div>
+        </div>
       </div>
     </div>
 
@@ -2344,10 +2402,10 @@
     </div>
 
     <!-- CTA -->
-    <div class="cta">
+    <div class="cta" id="refineCta">
       <div class="cta-eyebrow">정확도를 높이고 싶다면</div>
       <h2 class="cta-title">조건을 <em>조금만</em> 더 알려주세요</h2>
-      <p class="cta-desc">주거 상태와 소득을 입력하면 매칭 점수가 더 정확해져요.</p>
+      <p class="cta-desc" id="refineCtaDesc">주거 상태와 소득을 입력하면 매칭 점수가 더 정확해져요.</p>
       <button class="cta-btn" onclick="go('check')">조건 추가하기<i class="ti ti-arrow-right"></i></button>
     </div>
 
@@ -2514,6 +2572,18 @@
   <button class="mob-nav-item" data-screen="result"><i class="ti ti-circle-check"></i><span>결과</span></button>
   <button class="mob-nav-item" data-screen="mypage" style="display:none"><i class="ti ti-user"></i><span>마이</span></button>
 </nav>
+
+<!-- 위로가기 -->
+<button class="to-top" id="toTop" aria-label="맨 위로" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="ti ti-arrow-up"></i></button>
+<script>
+  (function(){
+    var btn = document.getElementById('toTop');
+    if(!btn) return;
+    function onScroll(){ if(window.scrollY > 400) btn.classList.add('on'); else btn.classList.remove('on'); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
 
 <script>
   const screens = ['dash', 'check', 'result', 'detail', 'mypage', 'compare'];
@@ -2772,6 +2842,14 @@
           <button class="onboard-option" data-value="no">아니오</button>
         </div>
       </div>
+
+      <div style="margin-top: 24px;">
+        <div style="font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 10px;">현재 임신 중이신가요?</div>
+        <div class="onboard-options c2" data-field="pregnant" style="margin-bottom: 0;">
+          <button class="onboard-option" data-value="yes">예</button>
+          <button class="onboard-option" data-value="no">아니오</button>
+        </div>
+      </div>
     </div>
 
     <div class="modal-footer">
@@ -2865,6 +2943,89 @@
   </div>
 </div>
 
+<!-- ============================================ -->
+<!-- v0.39 NEW — 생애최초 / 노부모 부양 / 거주 기간 -->
+<!-- ============================================ -->
+<div class="modal-overlay" id="modalFirstBuyer">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">청약·대출 우대</div>
+        <div class="modal-title">생애최초 주택구입<br>여부를 알려주세요</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('FirstBuyer')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13px; color: var(--ink-hint); margin-bottom: 24px;">생애최초 특별공급, 생애최초 대출/보증 우대 등에 영향을 줘요.</p>
+      <div>
+        <div style="font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 10px;">태어나서 처음으로 집을 사시는 건가요? (과거 주택 보유 이력이 없어야 해요)</div>
+        <div class="onboard-options c2" data-field="first_buyer" style="margin-bottom: 0;">
+          <button class="onboard-option" data-value="yes">예, 생애최초예요</button>
+          <button class="onboard-option" data-value="no">아니오</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="onboard-btn-back" onclick="closeModal('FirstBuyer')">취소</button>
+      <button class="onboard-btn-next primary" onclick="saveFirstBuyer()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalElderParent">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">특별공급 우대</div>
+        <div class="modal-title">노부모 부양<br>여부를 알려주세요</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ElderParent')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13px; color: var(--ink-hint); margin-bottom: 24px;">노부모 부양 특별공급 등에 영향을 줘요.</p>
+      <div>
+        <div style="font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 10px;">만 65세 이상 직계존속(부모·조부모)을 3년 이상 부양하고 계신가요?</div>
+        <div class="onboard-options c2" data-field="elder_parent" style="margin-bottom: 0;">
+          <button class="onboard-option" data-value="yes">예</button>
+          <button class="onboard-option" data-value="no">아니오</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="onboard-btn-back" onclick="closeModal('ElderParent')">취소</button>
+      <button class="onboard-btn-next primary" onclick="saveElderParent()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalResidence">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">지자체 정책</div>
+        <div class="modal-title">현 거주지<br>거주 기간을 알려주세요</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('Residence')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13px; color: var(--ink-hint); margin-bottom: 24px;">"해당 지역 N년 이상 거주" 요건이 있는 지자체 정책에 영향을 줘요.</p>
+      <div>
+        <div style="font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 10px;">지금 사는 지역(시·도)에 얼마나 사셨나요?</div>
+        <div class="onboard-options c2" data-field="residence_years" style="margin-bottom: 0;">
+          <button class="onboard-option" data-value="under_1">1년 미만</button>
+          <button class="onboard-option" data-value="1_3">1~3년</button>
+          <button class="onboard-option" data-value="3_5">3~5년</button>
+          <button class="onboard-option" data-value="5_plus">5년 이상</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="onboard-btn-back" onclick="closeModal('Residence')">취소</button>
+      <button class="onboard-btn-next primary" onclick="saveResidence()">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -2880,9 +3041,13 @@
     region_sigungu: null,
     children_count: null,
     newborn: null,
+    pregnant: null,
     housing_status: null,
     homeless_years: null,
     income: null,
+    first_buyer: null,
+    elder_parent: null,
+    residence_years: null,
   };
   window.userProfile = userProfile;  // 프로필 저장/복원(C-2-a)에서 접근
 
@@ -3080,7 +3245,10 @@
       const done = (
         (field === 'children' && userProfile.children_count !== null) ||
         (field === 'housing' && userProfile.housing_status !== null) ||
-        (field === 'income' && userProfile.income !== null)
+        (field === 'income' && userProfile.income !== null) ||
+        (field === 'firstbuyer' && userProfile.first_buyer !== null) ||
+        (field === 'elderparent' && userProfile.elder_parent !== null) ||
+        (field === 'residence' && userProfile.residence_years !== null)
       );
       item.classList.toggle('done', done);
       const cta = item.querySelector('.upgrade-item-cta');
@@ -3091,14 +3259,38 @@
       }
     });
 
-    // 모두 완료 시 카드 숨기기
-    const allDone = userProfile.children_count !== null
-      && userProfile.housing_status !== null
-      && userProfile.income !== null;
+    // 실제로 빠진 항목 계산
+    const missing = [];
+    if (userProfile.children_count === null) missing.push('자녀 정보');
+    if (userProfile.housing_status === null) missing.push('무주택 정보');
+    if (userProfile.income === null) missing.push('소득 구간');
+    if (userProfile.first_buyer === null) missing.push('생애최초 여부');
+    if (userProfile.elder_parent === null) missing.push('노부모 부양');
+    if (userProfile.residence_years === null) missing.push('거주 기간');
+    const allDone = missing.length === 0;
+
+    const titleEl = card.querySelector('.upgrade-card-title');
+    const eyebrowEl = card.querySelector('.upgrade-card-eyebrow');
     if (allDone) {
       card.style.opacity = '0.5';
-      card.querySelector('.upgrade-card-title').textContent = '모든 정보가 입력됐어요 ✓';
-      card.querySelector('.upgrade-card-eyebrow').textContent = '완료';
+      if (titleEl) titleEl.innerHTML = '모든 정보가 입력됐어요 ✓';
+      if (eyebrowEl) eyebrowEl.textContent = '완료';
+    } else {
+      card.style.opacity = '';
+      if (titleEl) titleEl.innerHTML = '더 정확한 매칭을 위해<br>' + missing.length + '가지만 더 알려주세요';
+      if (eyebrowEl) eyebrowEl.textContent = '정확도 업그레이드';
+    }
+
+    // 하단 '조건 추가하기' CTA — 실제로 빠진 항목이 있을 때만 표시
+    const refine = document.getElementById('refineCta');
+    if (refine) {
+      if (allDone) {
+        refine.style.display = 'none';
+      } else {
+        refine.style.display = '';
+        const desc = document.getElementById('refineCtaDesc');
+        if (desc) desc.textContent = missing.join(' · ') + ' — 입력하면 매칭 점수가 더 정확해져요.';
+      }
     }
   }
 
@@ -3114,7 +3306,7 @@
   }
 
   // 입력 모달 배경 클릭 닫기 (drag-safe: mousedown·mouseup 둘 다 배경에서 일어났을 때만)
-  ['Children', 'Housing', 'Income'].forEach(name => {
+  ['Children', 'Housing', 'Income', 'FirstBuyer', 'ElderParent', 'Residence'].forEach(name => {
     const ov = document.getElementById('modal' + name);
     if (ov) {
       let downOnBg = false;
@@ -3150,12 +3342,41 @@
   function saveChildren() {
     const countBtn = document.querySelector('#modalChildren [data-field="children_count"] .on');
     const newbornBtn = document.querySelector('#modalChildren [data-field="newborn"] .on');
+    const pregnantBtn = document.querySelector('#modalChildren [data-field="pregnant"] .on');
     if (!countBtn) { showToast('자녀 수를 선택해주세요', 'warn'); return; }
     userProfile.children_count = countBtn.dataset.value;
     if (newbornBtn) userProfile.newborn = newbornBtn.dataset.value;
+    if (pregnantBtn) userProfile.pregnant = pregnantBtn.dataset.value;
     closeModal('Children');
     updateDashboardForTier1();
     showToast(getDiffMessage('children'));
+    if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+  }
+  function saveFirstBuyer() {
+    const btn = document.querySelector('#modalFirstBuyer [data-field="first_buyer"] .on');
+    if (!btn) { showToast('생애최초 여부를 선택해주세요', 'warn'); return; }
+    userProfile.first_buyer = btn.dataset.value;
+    closeModal('FirstBuyer');
+    updateDashboardForTier1();
+    showToast('저장했어요 · 매칭을 다시 계산했어요');
+    if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+  }
+  function saveElderParent() {
+    const btn = document.querySelector('#modalElderParent [data-field="elder_parent"] .on');
+    if (!btn) { showToast('부양 여부를 선택해주세요', 'warn'); return; }
+    userProfile.elder_parent = btn.dataset.value;
+    closeModal('ElderParent');
+    updateDashboardForTier1();
+    showToast('저장했어요 · 매칭을 다시 계산했어요');
+    if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+  }
+  function saveResidence() {
+    const btn = document.querySelector('#modalResidence [data-field="residence_years"] .on');
+    if (!btn) { showToast('거주 기간을 선택해주세요', 'warn'); return; }
+    userProfile.residence_years = btn.dataset.value;
+    closeModal('Residence');
+    updateDashboardForTier1();
+    showToast('저장했어요 · 매칭을 다시 계산했어요');
     if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
   }
   function saveHousing() {
@@ -4823,6 +5044,12 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     // 소득 scope 분기 — 혼인 상태에 따라
     const isMarried = userProfile.marriage === 'newlywed' || userProfile.marriage === 'married';
 
+    // 거주 기간 → 개월(중앙값). 미입력 시 기존 동작 유지(36개월 가정)
+    const residenceMap = { under_1: 6, '1_3': 24, '3_5': 48, '5_plus': 72 };
+    const residenceMonths = (userProfile.residence_years != null && residenceMap[userProfile.residence_years] != null)
+      ? residenceMap[userProfile.residence_years]
+      : 36;
+
     const user = {
       age: ageMap[userProfile.age_range] || 32,
       marriage_status: marriageMap[userProfile.marriage] || 'single',
@@ -4833,10 +5060,12 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       annual_income_household: incomeVal,
       housing_status: userProfile.housing_status || null,
       homeless_years: homelessYears,
-      children: { count: childCount, births: births, pregnant: false },
-      residence: { region: userProfile.region_sido || 'seoul', months_resided: 36 },  // 시연용 36개월 거주 가정
-      first_buyer: !userProfile.housing_status || userProfile.housing_status === 'homeless',
-      supports_elder_parent: false,  // 추후 추가 입력에서 받음
+      children: { count: childCount, births: births, pregnant: userProfile.pregnant === 'yes' },
+      residence: { region: userProfile.region_sido || 'seoul', months_resided: residenceMonths },
+      first_buyer: (userProfile.first_buyer != null)
+        ? (userProfile.first_buyer === 'yes')
+        : (!userProfile.housing_status || userProfile.housing_status === 'homeless'),
+      supports_elder_parent: userProfile.elder_parent === 'yes',
     };
 
     return user;
@@ -5255,6 +5484,12 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
         housing_status: up.housing_status || null,
         homeless_years_range: up.homeless_years || null,
         income_range: up.income || null,
+        extra: {
+          pregnant: up.pregnant || null,
+          first_buyer: up.first_buyer || null,
+          elder_parent: up.elder_parent || null,
+          residence_years: up.residence_years || null,
+        },
         onboarded_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -5290,6 +5525,11 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       up.housing_status = data.housing_status;
       up.homeless_years = data.homeless_years_range;
       up.income = data.income_range;
+      const ex = data.extra || {};
+      up.pregnant = ex.pregnant || null;
+      up.first_buyer = ex.first_buyer || null;
+      up.elder_parent = ex.elder_parent || null;
+      up.residence_years = ex.residence_years || null;
       return true;
     } catch (e) { console.error(e); return false; }
   }
