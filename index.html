@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.33 (랜딩페이지 + 파비콘 추가)</title>
+<title>PinHome · v0.35 (로그인 시에만 '마이' 메뉴 표시)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2171,7 +2171,7 @@
       <button class="nav-item on" data-screen="dash">대시보드</button>
       <button class="nav-item" data-screen="check">간편 확인</button>
       <button class="nav-item" data-screen="result">결과</button>
-      <button class="nav-item" data-screen="mypage">마이</button>
+      <button class="nav-item" data-screen="mypage" style="display:none">마이</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
       <button class="theme-toggle" id="themeToggle" aria-label="테마 전환">
@@ -2512,7 +2512,7 @@
   <button class="mob-nav-item on" data-screen="dash"><i class="ti ti-layout-dashboard"></i><span>대시보드</span></button>
   <button class="mob-nav-item" data-screen="check"><i class="ti ti-bolt"></i><span>확인</span></button>
   <button class="mob-nav-item" data-screen="result"><i class="ti ti-circle-check"></i><span>결과</span></button>
-  <button class="mob-nav-item" data-screen="mypage"><i class="ti ti-user"></i><span>마이</span></button>
+  <button class="mob-nav-item" data-screen="mypage" style="display:none"><i class="ti ti-user"></i><span>마이</span></button>
 </nav>
 
 <script>
@@ -4738,6 +4738,23 @@ window.PinHomePolicies = [
     }
   }
 ];
+
+// ★ v0.34 — 소득 상한 규칙 안전망: income 규칙은 항상 '필수'로 취급.
+// (이 앱의 income 규칙은 '상한 넘으면 탈락'만 하므로 '선택'이면 죽은 조건이 됨.
+//  AI 변환이 실수로 required:false 로 만든 소득 상한을 불러올 때마다 자동 교정.)
+window.PinHomeNormalizeIncomeRules = function(policies) {
+  if (!Array.isArray(policies)) return policies;
+  policies.forEach(p => {
+    ((p && p.rules) || []).forEach(r => {
+      if (r && typeof r.type === 'string' && r.type.indexOf('income') !== -1 && r.required !== true) {
+        r.required = true;
+        r._forced_required = true;  // 교정됨 표시(디버깅용)
+      }
+    });
+  });
+  return policies;
+};
+window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
 </script>
 
 <!-- ============================================ -->
@@ -5300,6 +5317,8 @@ window.PinHomePolicies = [
         if (row.as_of) p.as_of = row.as_of;
         return p;
       });
+      // ★ v0.34 — 서버 정책에도 소득 규칙 '필수' 교정 적용
+      if (window.PinHomeNormalizeIncomeRules) window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       return true;
     } catch (e) {
       console.error('policies load exception:', e);
@@ -6434,6 +6453,17 @@ window.PinHomePolicies = [
     // 알림 벨 — 로그인했을 때만 표시 (비로그인 시 더미 알림 숨김)
     const bell = document.getElementById('notifBell');
     if (bell) bell.style.display = pinhomeUser ? '' : 'none';
+    // ★ v0.35 — '마이' 메뉴(PC 상단 + 모바일 하단)는 로그인했을 때만 표시
+    document.querySelectorAll('[data-screen="mypage"]').forEach(el => {
+      el.style.display = pinhomeUser ? '' : 'none';
+    });
+    // 로그아웃 상태인데 '마이' 화면을 보고 있으면 대시보드로 돌려보냄
+    if (!pinhomeUser) {
+      const mp = document.getElementById('screen-mypage');
+      if (mp && mp.classList.contains('on') && typeof window.goHome === 'function') {
+        window.goHome();
+      }
+    }
     // 단계 B(즐겨찾기)에서 연결할 훅
     if (typeof window.onPinhomeAuthChanged === 'function') {
       window.onPinhomeAuthChanged();
