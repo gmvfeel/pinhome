@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.1 (정책 목록)</title>
+<title>PinHome 백오피스 · v0.2 (정책 편집·발행)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -19,9 +19,8 @@
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
   button{font-family:inherit;cursor:pointer;}
-  input,select{font-family:inherit;}
+  input,select,textarea{font-family:inherit;}
 
-  /* ===== 로그인 ===== */
   .login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;}
   .login-card{width:100%;max-width:360px;text-align:center;}
   .login-mark{width:56px;height:56px;margin:0 auto 18px;background:var(--em);border-radius:16px;display:flex;align-items:center;justify-content:center;}
@@ -35,7 +34,6 @@
   .login-btn:disabled{opacity:.6;cursor:default;transform:none;}
   .login-err{margin-top:14px;font-size:13px;color:#FF6B6B;min-height:18px;}
 
-  /* ===== 레이아웃 ===== */
   .app{display:none;min-height:100vh;}
   .app.on{display:flex;}
   .side{width:186px;flex-shrink:0;background:#0D1220;border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;}
@@ -64,6 +62,7 @@
 
   .banner{display:flex;align-items:center;gap:10px;background:var(--amber-soft);border:1px solid rgba(242,166,35,.25);color:var(--amber);border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:16px;}
   .banner i{font-size:17px;flex-shrink:0;}
+  .banner-btn{margin-left:auto;flex-shrink:0;padding:7px 13px;background:var(--amber);color:#3a2600;border:none;border-radius:7px;font-size:12.5px;font-weight:700;}
 
   .filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .search-wrap{position:relative;flex:1;min-width:180px;max-width:340px;}
@@ -77,7 +76,7 @@
   .thead,.trow{display:grid;grid-template-columns:2.6fr 1fr 1fr 1.1fr;gap:10px;align-items:center;}
   .thead>div,.trow>div{min-width:0;}
   .thead{padding:12px 18px;background:rgba(255,255,255,.03);color:var(--ink-mute);font-size:11.5px;font-weight:600;}
-  .trow{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;}
+  .trow{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;cursor:pointer;}
   .trow:hover{background:rgba(255,255,255,.02);}
   .t-title{color:var(--ink);font-weight:500;}
   .t-id{color:var(--ink-mute);font-size:11px;margin-top:2px;word-break:break-all;}
@@ -90,14 +89,35 @@
   .toggle.on{background:var(--em);}
   .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s;}
   .toggle.on::after{transform:translateX(18px);}
-  .toggle:disabled{opacity:.4;cursor:not-allowed;}
   .status-cell{display:flex;align-items:center;gap:9px;}
   .status-cell span{font-size:12px;color:var(--ink-mute);}
 
-  .empty{padding:40px;text-align:center;color:var(--ink-mute);font-size:13.5px;}
-  .loading{padding:40px;text-align:center;color:var(--ink-mute);font-size:13.5px;}
+  .empty,.loading{padding:40px;text-align:center;color:var(--ink-mute);font-size:13.5px;}
 
-  /* 토스트 */
+  /* 편집기 */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .overlay.on{opacity:1;pointer-events:auto;}
+  .editor{position:fixed;top:0;right:0;bottom:0;width:560px;max-width:100%;background:var(--surface);border-left:1px solid var(--line);z-index:151;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column;}
+  .editor.on{transform:translateX(0);}
+  .editor-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .ed-title{font-size:16px;font-weight:800;letter-spacing:-.02em;}
+  .ed-id{font-size:11px;color:var(--ink-mute);margin-top:4px;word-break:break-all;}
+  .editor-body{flex:1;overflow-y:auto;padding:20px 22px;}
+  .editor-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--ink-mute);margin-bottom:6px;}
+  .field input,.field textarea{width:100%;padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13.5px;outline:none;}
+  .field input:focus,.field textarea:focus{border-color:var(--em-line);}
+  .field textarea{resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.55;}
+  .row-flex{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .btn-primary{padding:11px 22px;background:var(--em);color:#04211A;border:none;border-radius:9px;font-size:13.5px;font-weight:700;}
+  .btn-primary:disabled{opacity:.6;cursor:default;}
+  .btn-ghost{padding:11px 18px;background:none;border:1px solid var(--line-strong);color:var(--ink-soft);border-radius:9px;font-size:13.5px;}
+  .fix-box{background:var(--amber-soft);border:1px solid rgba(242,166,35,.25);border-radius:9px;padding:13px 14px;margin-bottom:18px;font-size:12.5px;color:var(--amber);line-height:1.5;}
+  .fix-box button{margin-top:10px;padding:8px 14px;background:var(--amber);color:#3a2600;border:none;border-radius:7px;font-size:12.5px;font-weight:700;}
+  .adv-toggle{background:none;border:none;color:var(--ink-mute);font-size:12.5px;padding:0;margin:4px 0 10px;display:flex;align-items:center;gap:6px;}
+  .adv-toggle:hover{color:var(--ink-soft);}
+
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface-elev);color:var(--ink);padding:12px 20px;border-radius:10px;font-size:13.5px;border:1px solid var(--line-strong);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200;}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
@@ -113,12 +133,12 @@
     .thead{display:none;}
     .trow{grid-template-columns:1fr auto;row-gap:8px;padding:14px 16px;}
     .trow .t-cat,.trow .t-income{grid-column:1;font-size:12px;}
+    .editor{width:100%;}
   }
 </style>
 </head>
 <body>
 
-<!-- 로그인 -->
 <div class="login" id="login">
   <div class="login-card">
     <div class="login-mark"></div>
@@ -130,21 +150,18 @@
   </div>
 </div>
 
-<!-- 관리 화면 -->
 <div class="app" id="app">
   <aside class="side">
     <div class="side-brand"><div class="side-logo"></div><div class="side-name">PinHome 관리</div></div>
     <nav class="side-nav">
       <button class="side-item on"><i class="ti ti-list-details"></i>정책 목록</button>
-      <button class="side-item soon" onclick="soon()"><i class="ti ti-edit"></i>정책 편집<span class="side-badge">준비 중</span></button>
+      <button class="side-item" onclick="toast('정책 행을 클릭하면 편집 창이 열려요')"><i class="ti ti-edit"></i>정책 편집</button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-sparkles"></i>AI 변환<span class="side-badge">준비 중</span></button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-adjustments"></i>기준값<span class="side-badge">준비 중</span></button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-chart-bar"></i>통계<span class="side-badge">준비 중</span></button>
       <button class="side-item soon" onclick="soon()"><i class="ti ti-users"></i>회원<span class="side-badge">준비 중</span></button>
     </nav>
-    <div class="side-foot">
-      <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i>로그아웃</button>
-    </div>
+    <div class="side-foot"><button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i>로그아웃</button></div>
   </aside>
 
   <main class="main">
@@ -153,25 +170,20 @@
         <div class="page-title">정책 목록</div>
         <div class="page-sub" id="counts">불러오는 중…</div>
       </div>
-      <div class="head-actions">
-        <button class="sel" onclick="loadPolicies()" title="새로고침"><i class="ti ti-refresh"></i></button>
-      </div>
+      <div class="head-actions"><button class="sel" onclick="loadPolicies()" title="새로고침"><i class="ti ti-refresh"></i></button></div>
     </div>
 
     <div class="banner" id="optBanner" style="display:none">
       <i class="ti ti-alert-triangle"></i>
-      <span id="optBannerText"></span>
+      <span id="optBannerText" style="flex:1"></span>
+      <button class="banner-btn" onclick="bulkFixIncome()">모두 필수로 바로잡기</button>
     </div>
 
     <div class="filters">
       <div class="search-wrap"><i class="ti ti-search"></i><input class="search" id="q" placeholder="제목으로 검색" oninput="render()"></div>
       <select class="sel" id="fCat" onchange="render()"><option value="">전체 카테고리</option></select>
-      <select class="sel" id="fStatus" onchange="render()">
-        <option value="">전체 상태</option><option value="on">활성만</option><option value="off">비활성만</option>
-      </select>
-      <select class="sel" id="fIncome" onchange="render()">
-        <option value="">전체 소득조건</option><option value="required">필수</option><option value="optional">선택(문제)</option><option value="none">없음</option>
-      </select>
+      <select class="sel" id="fStatus" onchange="render()"><option value="">전체 상태</option><option value="on">활성만</option><option value="off">비활성만</option></select>
+      <select class="sel" id="fIncome" onchange="render()"><option value="">전체 소득조건</option><option value="required">필수</option><option value="optional">선택(문제)</option><option value="none">없음</option></select>
     </div>
 
     <div class="table">
@@ -181,181 +193,210 @@
   </main>
 </div>
 
+<!-- 편집기 -->
+<div class="overlay" id="edOverlay" onclick="closeEditor()"></div>
+<aside class="editor" id="editor">
+  <div class="editor-head">
+    <div style="min-width:0"><div class="ed-title" id="edTitle">제목</div><div class="ed-id" id="edId"></div></div>
+    <button class="btn-ghost" style="padding:8px 11px" onclick="closeEditor()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="editor-body">
+    <div class="row-flex">
+      <label style="font-size:13px;color:var(--ink-soft)">노출 상태</label>
+      <div class="status-cell"><button class="toggle" id="edActive" onclick="toggleActiveFromEditor()"></button><span id="edActiveLabel"></span></div>
+    </div>
+    <div class="fix-box" id="edFixBox" style="display:none">
+      이 정책의 소득조건이 <b>‘선택’</b>으로 저장돼 있어요. ‘필수’로 바꿔야 소득이 매칭에 반영됩니다.
+      <br><button onclick="quickFixIncome()">소득조건 ‘필수’로 바로잡기</button>
+    </div>
+    <div class="field"><label>제목</label><input id="edF_title" oninput="onField('title',this.value)"></div>
+    <div class="field"><label>카테고리</label><input id="edF_category" oninput="onField('category',this.value)"></div>
+    <div class="field"><label>한 줄 설명</label><input id="edF_short_desc" oninput="onField('short_desc',this.value)"></div>
+    <div class="field"><label>공식 URL</label><input id="edF_official_url" oninput="onField('official_url',this.value)"></div>
+    <div class="field"><label>소관기관</label><input id="edF_source_org" oninput="onField('source_org',this.value)"></div>
+    <div class="field"><label>기준일 (as_of)</label><input id="edF_as_of" oninput="onField('as_of',this.value)"></div>
+    <button class="adv-toggle" onclick="toggleAdv()"><i class="ti ti-code"></i><span id="advLabel">고급 편집 (전체 JSON) 열기</span></button>
+    <div class="field" id="edAdv" style="display:none">
+      <textarea id="edJson" rows="18" spellcheck="false" oninput="onJsonEdit()"></textarea>
+      <div id="edJsonErr" style="font-size:12px;color:#FF6B6B;margin-top:6px;"></div>
+    </div>
+  </div>
+  <div class="editor-foot">
+    <button class="btn-ghost" onclick="closeEditor()">취소</button>
+    <button class="btn-primary" id="edSaveBtn" onclick="saveEditor()">저장</button>
+  </div>
+</aside>
+
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== 설정 =====
   const SUPABASE_URL = 'https://bfgyndtygqpwqnmqirtl.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_zh4_MtzjfIKP-VoUz4nW8g_RFOF77mb';
   const BACKEND_URL  = 'https://wxn-gemini-proxy.vercel.app/api/policy-to-pinhome';
-
   const CAT_LABEL = { loan:'대출', subscription:'청약', subscription_account:'청약', jeonse:'전월세', rent:'전월세', rental:'전월세', wolse:'전월세', lease:'전월세', subsidy:'보조금', grant:'보조금', guarantee:'보증', deposit_guarantee:'보증', other:'기타' };
 
-  let sb = null;
-  let policies = [];   // 원본 행 목록
+  let sb = null, policies = [], curIdx = -1, cur = null;
 
-  // ===== 유틸 =====
   function getPw(){ return sessionStorage.getItem('ph_admin_pw') || ''; }
-  function toast(msg){
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('on');
-    clearTimeout(window._tt); window._tt = setTimeout(()=>t.classList.remove('on'), 2600);
-  }
+  function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('on'),2800); }
   function soon(){ toast('다음 단계에서 준비 중이에요'); }
   function catLabel(c){ return CAT_LABEL[c] || c || '기타'; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-  // 정책의 소득조건 상태: 'required' / 'optional'(문제) / 'none'
   function incomeState(row){
     const rules = (row.data && row.data.rules) || [];
-    const inc = rules.filter(r => typeof r.type === 'string' && r.type.indexOf('income') !== -1);
-    if (inc.length === 0) return 'none';
-    return inc.some(r => r.required !== true) ? 'optional' : 'required';
+    const inc = rules.filter(r => typeof r.type==='string' && r.type.indexOf('income')!==-1);
+    if (inc.length===0) return 'none';
+    return inc.some(r => r.required!==true) ? 'optional' : 'required';
   }
 
-  // ===== 백엔드 호출 =====
   async function api(action, extra){
-    const res = await fetch(BACKEND_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(Object.assign({ password:getPw(), action }, extra||{}))
-    });
-    let data = {};
-    try { data = await res.json(); } catch(e){}
-    if (res.status === 401){ logout(); throw new Error('로그인이 만료됐어요'); }
-    if (!res.ok) throw new Error(data.error || ('오류 ' + res.status));
+    const res = await fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({password:getPw(),action},extra||{}))});
+    let data={}; try{ data=await res.json(); }catch(e){}
+    if (res.status===401){ logout(); throw new Error('로그인이 만료됐어요'); }
+    if (!res.ok) throw new Error(data.error || ('오류 '+res.status));
     return data;
   }
 
-  // ===== 로그인 =====
   async function doLogin(){
-    const pw = document.getElementById('pwInput').value.trim();
-    const err = document.getElementById('loginErr');
-    const btn = document.getElementById('loginBtn');
-    err.textContent = '';
-    if (!pw){ err.textContent = '비밀번호를 입력해주세요'; return; }
-    btn.disabled = true; btn.textContent = '확인 중…';
-    try {
-      const res = await fetch(BACKEND_URL, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ password:pw, action:'published_ids' })
-      });
-      if (res.status === 401){ err.textContent = '비밀번호가 올바르지 않아요'; return; }
-      if (!res.ok){ err.textContent = '서버 연결에 문제가 있어요 (' + res.status + ')'; return; }
-      sessionStorage.setItem('ph_admin_pw', pw);
-      enterApp();
-    } catch(e){
-      err.textContent = '서버에 연결할 수 없어요. 주소를 확인해주세요.';
-    } finally {
-      btn.disabled = false; btn.textContent = '로그인';
-    }
+    const pw=document.getElementById('pwInput').value.trim();
+    const err=document.getElementById('loginErr'), btn=document.getElementById('loginBtn');
+    err.textContent='';
+    if(!pw){ err.textContent='비밀번호를 입력해주세요'; return; }
+    btn.disabled=true; btn.textContent='확인 중…';
+    try{
+      const res=await fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw,action:'published_ids'})});
+      if(res.status===401){ err.textContent='비밀번호가 올바르지 않아요'; return; }
+      if(!res.ok){ err.textContent='서버 연결에 문제가 있어요 ('+res.status+')'; return; }
+      sessionStorage.setItem('ph_admin_pw',pw); enterApp();
+    }catch(e){ err.textContent='서버에 연결할 수 없어요. 주소를 확인해주세요.'; }
+    finally{ btn.disabled=false; btn.textContent='로그인'; }
   }
+  function logout(){ sessionStorage.removeItem('ph_admin_pw'); document.getElementById('app').classList.remove('on'); document.getElementById('login').style.display='flex'; document.getElementById('pwInput').value=''; closeEditor(); }
+  function enterApp(){ document.getElementById('login').style.display='none'; document.getElementById('app').classList.add('on'); if(!sb) sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); loadPolicies(); }
 
-  function logout(){
-    sessionStorage.removeItem('ph_admin_pw');
-    document.getElementById('app').classList.remove('on');
-    document.getElementById('login').style.display = 'flex';
-    document.getElementById('pwInput').value = '';
-  }
-
-  function enterApp(){
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('app').classList.add('on');
-    if (!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    loadPolicies();
-  }
-
-  // ===== 정책 불러오기 =====
   async function loadPolicies(){
-    document.getElementById('rows').innerHTML = '<div class="loading">불러오는 중…</div>';
-    try {
-      const { data, error } = await sb
-        .from('pinhome_policies')
-        .select('id,title,category,is_active,sort_order,data')
-        .order('sort_order', { ascending:true });
-      if (error) throw error;
+    document.getElementById('rows').innerHTML='<div class="loading">불러오는 중…</div>';
+    try{
+      const { data, error } = await sb.from('pinhome_policies').select('id,title,category,is_active,sort_order,official_url,as_of,data').order('sort_order',{ascending:true});
+      if(error) throw error;
       policies = data || [];
-      buildCategoryFilter();
-      render();
-    } catch(e){
-      document.getElementById('rows').innerHTML = '<div class="empty">정책을 불러오지 못했어요: ' + (e.message||e) + '</div>';
-    }
+      buildCategoryFilter(); render();
+    }catch(e){ document.getElementById('rows').innerHTML='<div class="empty">정책을 불러오지 못했어요: '+(e.message||e)+'</div>'; }
   }
-
   function buildCategoryFilter(){
-    const cats = Array.from(new Set(policies.map(p => p.category).filter(Boolean)));
-    const sel = document.getElementById('fCat');
-    sel.innerHTML = '<option value="">전체 카테고리</option>' + cats.map(c => '<option value="'+c+'">'+catLabel(c)+'</option>').join('');
+    const cats=Array.from(new Set(policies.map(p=>p.category).filter(Boolean)));
+    document.getElementById('fCat').innerHTML='<option value="">전체 카테고리</option>'+cats.map(c=>'<option value="'+c+'">'+catLabel(c)+'</option>').join('');
   }
 
-  // ===== 렌더링 =====
   function render(){
-    const q = document.getElementById('q').value.trim().toLowerCase();
-    const fCat = document.getElementById('fCat').value;
-    const fStatus = document.getElementById('fStatus').value;
-    const fIncome = document.getElementById('fIncome').value;
+    const q=document.getElementById('q').value.trim().toLowerCase();
+    const fCat=document.getElementById('fCat').value, fStatus=document.getElementById('fStatus').value, fIncome=document.getElementById('fIncome').value;
+    const activeN=policies.filter(p=>p.is_active).length;
+    const optN=policies.filter(p=>incomeState(p)==='optional').length;
+    document.getElementById('counts').innerHTML='전체 '+policies.length+'개 · 활성 <b>'+activeN+'</b>개 · 비활성 '+(policies.length-activeN)+'개';
+    const banner=document.getElementById('optBanner');
+    if(optN>0){ banner.style.display='flex'; document.getElementById('optBannerText').textContent='소득조건이 ‘선택’으로 저장된 정책 '+optN+'개 — 아래 목록에서 노란 ‘선택’ 배지를 클릭해 고치거나, 오른쪽 버튼으로 한 번에 바로잡으세요.'; }
+    else banner.style.display='none';
 
-    const activeN = policies.filter(p => p.is_active).length;
-    const optN = policies.filter(p => incomeState(p) === 'optional').length;
-    document.getElementById('counts').innerHTML =
-      '전체 ' + policies.length + '개 · 활성 <b>' + activeN + '</b>개 · 비활성 ' + (policies.length - activeN) + '개';
-
-    const banner = document.getElementById('optBanner');
-    if (optN > 0){
-      banner.style.display = 'flex';
-      document.getElementById('optBannerText').textContent =
-        '소득조건이 \u2018선택\u2019으로 저장된 정책 ' + optN + '개 — 다음 편집 단계에서 \u2018필수\u2019로 바로잡을 수 있어요. (사용자 앱은 이미 자동 교정 중)';
-    } else banner.style.display = 'none';
-
-    const list = policies.filter(p => {
-      if (q && !((p.title||'').toLowerCase().includes(q) || (p.id||'').toLowerCase().includes(q))) return false;
-      if (fCat && p.category !== fCat) return false;
-      if (fStatus === 'on' && !p.is_active) return false;
-      if (fStatus === 'off' && p.is_active) return false;
-      if (fIncome && incomeState(p) !== fIncome) return false;
+    const list=policies.filter(p=>{
+      if(q && !((p.title||'').toLowerCase().includes(q)||(p.id||'').toLowerCase().includes(q))) return false;
+      if(fCat && p.category!==fCat) return false;
+      if(fStatus==='on' && !p.is_active) return false;
+      if(fStatus==='off' && p.is_active) return false;
+      if(fIncome && incomeState(p)!==fIncome) return false;
       return true;
     });
-
-    const box = document.getElementById('rows');
-    if (list.length === 0){ box.innerHTML = '<div class="empty">조건에 맞는 정책이 없어요</div>'; return; }
-
-    box.innerHTML = list.map((p, i) => {
-      const idx = policies.indexOf(p);
-      const inc = incomeState(p);
-      const incPill = inc === 'required' ? '<span class="pill req">필수</span>'
-        : inc === 'optional' ? '<span class="pill opt">선택</span>'
-        : '<span class="pill none">없음</span>';
-      const isAuto = (p.id||'').startsWith('auto_');
-      const toggleDisabled = isAuto ? '' : 'disabled title="직접 만든 정책은 편집 단계에서 지원돼요"';
-      return '<div class="trow">'
-        + '<div><div class="t-title">' + escapeHtml(p.title||'(제목 없음)') + '</div><div class="t-id">' + escapeHtml(p.id||'') + '</div></div>'
-        + '<div class="t-cat">' + catLabel(p.category) + '</div>'
-        + '<div class="t-income">' + incPill + '</div>'
-        + '<div class="status-cell"><button class="toggle ' + (p.is_active?'on':'') + '" ' + toggleDisabled + ' onclick="toggleActive(' + idx + ')"></button><span>' + (p.is_active?'활성':'비활성') + '</span></div>'
-        + '</div>';
+    const box=document.getElementById('rows');
+    if(list.length===0){ box.innerHTML='<div class="empty">조건에 맞는 정책이 없어요</div>'; return; }
+    box.innerHTML=list.map(p=>{
+      const idx=policies.indexOf(p), inc=incomeState(p);
+      const incPill = inc==='required'?'<span class="pill req">필수</span>':inc==='optional'?'<span class="pill opt">선택</span>':'<span class="pill none">없음</span>';
+      return '<div class="trow" onclick="openEditor('+idx+')">'
+        +'<div><div class="t-title">'+escapeHtml(p.title||'(제목 없음)')+'</div><div class="t-id">'+escapeHtml(p.id||'')+'</div></div>'
+        +'<div class="t-cat">'+catLabel(p.category)+'</div>'
+        +'<div class="t-income">'+incPill+'</div>'
+        +'<div class="status-cell"><button class="toggle '+(p.is_active?'on':'')+'" onclick="event.stopPropagation();toggleActive('+idx+')"></button><span>'+(p.is_active?'활성':'비활성')+'</span></div>'
+        +'</div>';
     }).join('');
   }
 
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-  // ===== 활성/비활성 전환 =====
   async function toggleActive(idx){
-    const row = policies[idx];
-    if (!row) return;
-    if (!(row.id||'').startsWith('auto_')){ toast('직접 만든 정책은 편집 단계에서 지원돼요'); return; }
-    const sid = row.id.replace(/^auto_/, '');
-    const next = !row.is_active;
-    try {
-      await api('set_active', { service_id: sid, activate: next });
-      row.is_active = next;
-      render();
-      toast(next ? '활성화했어요' : '비활성화했어요');
-    } catch(e){
-      toast('변경 실패: ' + (e.message||e));
-    }
+    const row=policies[idx]; if(!row) return;
+    const next=!row.is_active;
+    try{ await api('set_active',{id:row.id,activate:next}); row.is_active=next; render(); if(curIdx===idx) updateEditorActive(next); toast(next?'활성화했어요':'비활성화했어요'); }
+    catch(e){ toast('변경 실패: '+(e.message||e)); }
   }
 
-  // ===== 시작 =====
-  document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  if (getPw()) enterApp();
+  /* ===== 편집기 ===== */
+  function openEditor(idx){
+    curIdx=idx; const p=policies[idx];
+    cur=JSON.parse(JSON.stringify(p.data||{}));
+    if(cur.official_url===undefined && p.official_url) cur.official_url=p.official_url;
+    if(cur.as_of===undefined && p.as_of) cur.as_of=p.as_of;
+    document.getElementById('edTitle').textContent=p.title||cur.title||'(제목 없음)';
+    document.getElementById('edId').textContent=p.id;
+    setF('title',cur.title); setF('category',cur.category); setF('short_desc',cur.short_desc);
+    setF('official_url',cur.official_url); setF('source_org',cur.source_org); setF('as_of',cur.as_of);
+    updateEditorActive(p.is_active);
+    document.getElementById('edFixBox').style.display = incomeState(p)==='optional' ? 'block':'none';
+    document.getElementById('edAdv').style.display='none'; document.getElementById('advLabel').textContent='고급 편집 (전체 JSON) 열기';
+    document.getElementById('edJsonErr').textContent='';
+    syncJson();
+    document.getElementById('edOverlay').classList.add('on'); document.getElementById('editor').classList.add('on');
+  }
+  function closeEditor(){ document.getElementById('edOverlay').classList.remove('on'); document.getElementById('editor').classList.remove('on'); curIdx=-1; cur=null; }
+  function setF(k,v){ const el=document.getElementById('edF_'+k); if(el) el.value = (v==null?'':v); }
+  function onField(k,v){ if(!cur) return; cur[k]=v; if(k==='title') document.getElementById('edTitle').textContent=v||'(제목 없음)'; syncJson(); }
+  function updateEditorActive(on){ const t=document.getElementById('edActive'); t.classList.toggle('on',!!on); document.getElementById('edActiveLabel').textContent=on?'활성':'비활성'; }
+  function toggleActiveFromEditor(){ if(curIdx>=0) toggleActive(curIdx); }
+  function quickFixIncome(){
+    if(!cur) return;
+    (cur.rules||[]).forEach(r=>{ if(typeof r.type==='string' && r.type.indexOf('income')!==-1) r.required=true; });
+    document.getElementById('edFixBox').style.display='none'; syncJson();
+    toast('소득조건을 ‘필수’로 표시했어요. 아래 ‘저장’을 눌러 반영하세요');
+  }
+  function toggleAdv(){ const a=document.getElementById('edAdv'); const open=a.style.display==='none'; a.style.display=open?'block':'none'; document.getElementById('advLabel').textContent=open?'고급 편집 닫기':'고급 편집 (전체 JSON) 열기'; if(open) syncJson(); }
+  function syncJson(){ document.getElementById('edJson').value=JSON.stringify(cur,null,2); }
+  function onJsonEdit(){
+    const ta=document.getElementById('edJson'), err=document.getElementById('edJsonErr');
+    try{ const o=JSON.parse(ta.value); cur=o; err.textContent='';
+      setF('title',cur.title); setF('category',cur.category); setF('short_desc',cur.short_desc);
+      setF('official_url',cur.official_url); setF('source_org',cur.source_org); setF('as_of',cur.as_of);
+      document.getElementById('edTitle').textContent=cur.title||'(제목 없음)';
+    }catch(e){ err.textContent='JSON 형식 오류: '+e.message; }
+  }
+  async function saveEditor(){
+    if(curIdx<0||!cur) return;
+    if(document.getElementById('edJsonErr').textContent){ toast('JSON 오류를 먼저 고쳐주세요'); return; }
+    const p=policies[curIdx], btn=document.getElementById('edSaveBtn');
+    btn.disabled=true; btn.textContent='저장 중…';
+    try{
+      await api('save',{ id:p.id, data:cur, title:cur.title||'', category:cur.category||'', official_url:cur.official_url||'', as_of:cur.as_of||'' });
+      p.data=cur; p.title=cur.title||p.title; p.category=cur.category||p.category;
+      if(cur.official_url!==undefined) p.official_url=cur.official_url; if(cur.as_of!==undefined) p.as_of=cur.as_of;
+      render(); closeEditor(); toast('저장했어요');
+    }catch(e){ toast('저장 실패: '+(e.message||e)); }
+    finally{ btn.disabled=false; btn.textContent='저장'; }
+  }
+
+  async function bulkFixIncome(){
+    const targets=policies.filter(p=>incomeState(p)==='optional');
+    if(!targets.length){ toast('바로잡을 정책이 없어요'); return; }
+    if(!confirm(targets.length+'개 정책의 소득조건을 모두 ‘필수’로 바꿀까요?\n(각 정책을 저장소에 저장합니다)')) return;
+    let done=0;
+    for(const p of targets){
+      const data=JSON.parse(JSON.stringify(p.data||{}));
+      (data.rules||[]).forEach(r=>{ if(typeof r.type==='string' && r.type.indexOf('income')!==-1) r.required=true; });
+      try{ await api('save',{id:p.id,data}); p.data=data; done++; toast('바로잡는 중… '+done+'/'+targets.length); }
+      catch(e){ toast('일부 실패: '+(e.message||e)); }
+    }
+    render(); toast(done+'개 정책의 소득조건을 ‘필수’로 바로잡았어요');
+  }
+
+  document.getElementById('pwInput').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeEditor(); });
+  if(getPw()) enterApp();
 </script>
 </body>
 </html>
