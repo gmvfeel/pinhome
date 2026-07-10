@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.10 (대시보드 KPI·회원검색/CSV·마감일)</title>
+<title>PinHome 백오피스 · v0.11 (정책목록 마감일 컬럼)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -74,7 +74,7 @@
   .sel:focus{border-color:var(--em-line);}
 
   .table{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
-  .thead,.trow{display:grid;grid-template-columns:2fr 1.3fr 0.85fr 0.85fr 0.85fr 1fr;gap:10px;align-items:center;}
+  .thead,.trow{display:grid;grid-template-columns:2fr 1.2fr 0.8fr 0.8fr 0.85fr 0.8fr 1fr;gap:10px;align-items:center;}
   .thead>div,.trow>div{min-width:0;}
   .thead{padding:12px 18px;background:rgba(255,255,255,.03);color:var(--ink-mute);font-size:11.5px;font-weight:600;}
   .trow{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;cursor:pointer;}
@@ -83,6 +83,12 @@
   .t-id{color:var(--ink-mute);font-size:11px;margin-top:2px;word-break:break-all;}
   .t-cat{color:var(--ink-soft);}
   .t-org,.t-asof{color:var(--ink-soft);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ddl-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:-.01em;white-space:nowrap;}
+  .ddl-today{background:rgba(255,107,107,.15);color:#FF6B6B;}
+  .ddl-soon{background:rgba(245,166,35,.16);color:var(--amber,#F5A623);}
+  .ddl-far{background:var(--em-soft);color:var(--em);}
+  .ddl-closed{background:rgba(150,150,150,.15);color:var(--ink-mute);}
+  .t-ddl-none{color:var(--ink-mute);font-size:12.5px;}
   .pill{display:inline-flex;align-items:center;font-size:11.5px;padding:3px 10px;border-radius:20px;}
   .pill.req{background:var(--em-soft);color:var(--em);}
   .pill.opt{background:var(--amber-soft);color:var(--amber);}
@@ -170,7 +176,7 @@
     .main{padding:18px 16px 50px;}
     .thead{display:none;}
     .trow{grid-template-columns:1fr auto;row-gap:8px;padding:14px 16px;}
-    .trow .t-cat,.trow .t-income,.trow .t-org,.trow .t-asof{grid-column:1;font-size:12px;}
+    .trow .t-cat,.trow .t-income,.trow .t-org,.trow .t-asof,.trow .t-ddl{grid-column:1;font-size:12px;}
     .editor{width:100%;}
     .wrow{grid-template-columns:1fr;row-gap:6px;}
   }
@@ -240,7 +246,7 @@
     </div>
 
     <div class="table">
-      <div class="thead"><div>제목</div><div>소관기관</div><div>카테고리</div><div>기준일</div><div>소득조건</div><div>상태</div></div>
+      <div class="thead"><div>제목</div><div>소관기관</div><div>카테고리</div><div>기준일</div><div>마감일</div><div>소득조건</div><div>상태</div></div>
       <div id="rows"><div class="loading">불러오는 중…</div></div>
     </div>
   </div><!-- /page-list -->
@@ -382,6 +388,16 @@
   function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('on'),2800); }
   function soon(){ toast('다음 단계에서 준비 중이에요'); }
   function catLabel(c){ return CAT_LABEL[c] || c || '기타'; }
+  function ddlBadgeAdmin(p){
+    const raw=p&&p.data&&p.data.application_deadline; if(!raw) return '<span class="t-ddl-none">—</span>';
+    const d=new Date(String(raw)+'T23:59:59'); if(isNaN(d)) return '<span class="t-ddl-none">—</span>';
+    const days=Math.floor((d-new Date())/86400000); let cls,txt;
+    if(days<0){cls='closed';txt='마감';}
+    else if(days===0){cls='today';txt='오늘';}
+    else if(days<=30){cls=(days<=7?'soon':'far');txt='D-'+days;}
+    else {cls='far';txt=String(raw).slice(5);}
+    return '<span class="ddl-badge ddl-'+cls+'" title="'+escapeHtml(String(raw))+'">'+txt+'</span>';
+  }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   function incomeState(row){
@@ -458,6 +474,7 @@
         +'<div class="t-org">'+escapeHtml((p.data&&p.data.source_org)||'—')+'</div>'
         +'<div class="t-cat">'+catLabel(p.category)+'</div>'
         +'<div class="t-asof">'+escapeHtml(p.as_of||(p.data&&p.data.as_of)||'—')+'</div>'
+        +'<div class="t-ddl">'+ddlBadgeAdmin(p)+'</div>'
         +'<div class="t-income">'+incPill+'</div>'
         +'<div class="status-cell"><button class="toggle '+(p.is_active?'on':'')+'" onclick="event.stopPropagation();toggleActive('+idx+')"></button><span>'+(p.is_active?'활성':'비활성')+'</span></div>'
         +'</div>';
