@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.46 (알림 설정)</title>
+<title>PinHome · v0.47 (이메일 알림 수신 옵션)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -3129,6 +3129,10 @@
           <button class="nset-toggle" id="nset_newmatch" onclick="toggleNset('newmatch')"></button>
         </div>
       </div>
+      <div class="nset-row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:16px">
+        <div><div class="nset-t">이메일로도 받기</div><div class="nset-d" id="nsetEmailDesc">마감 임박 정책을 가입 이메일로 보내드려요</div></div>
+        <button class="nset-toggle" id="nset_email" onclick="toggleNset('email')"></button>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="onboard-btn-back" onclick="closeModal('Notif')">취소</button>
@@ -5655,6 +5659,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
           first_buyer: up.first_buyer || null,
           elder_parent: up.elder_parent || null,
           residence_years: up.residence_years || null,
+          email_optin: !!up.email_optin,
         },
         onboarded_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -5696,6 +5701,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       up.first_buyer = ex.first_buyer || null;
       up.elder_parent = ex.elder_parent || null;
       up.residence_years = ex.residence_years || null;
+      up.email_optin = !!ex.email_optin;
       return true;
     } catch (e) { console.error(e); return false; }
   }
@@ -6486,25 +6492,40 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
   let _notifDraft = null;
   window.openNotifSettings = function() {
     _notifDraft = loadNotifPrefs();
+    _notifDraft._loggedIn = !!(window.getPinhomeUser && window.getPinhomeUser());
+    _notifDraft.email = !!(window.userProfile && window.userProfile.email_optin);
     paintNotifToggles();
     openModal('Notif');
   };
   function paintNotifToggles() {
-    ['master', 'expiring', 'eligibility', 'newmatch'].forEach(k => {
+    ['master', 'expiring', 'eligibility', 'newmatch', 'email'].forEach(k => {
       const el = document.getElementById('nset_' + k);
       if (el) el.classList.toggle('on', !!_notifDraft[k]);
     });
-    // 전체 알림 끄면 하위 항목 흐리게
     const sub = document.getElementById('nsetSubGroup');
     if (sub) sub.style.opacity = _notifDraft.master ? '1' : '0.4';
+    const desc = document.getElementById('nsetEmailDesc'), et = document.getElementById('nset_email');
+    if (desc && et) {
+      if (!_notifDraft._loggedIn) { desc.textContent = '로그인하면 가입 이메일로 받을 수 있어요'; et.style.opacity = '0.4'; }
+      else { desc.textContent = '마감 임박 정책을 가입 이메일로 보내드려요'; et.style.opacity = ''; }
+    }
   }
   window.toggleNset = function(key) {
     if (!_notifDraft) return;
+    if (key === 'email' && !_notifDraft._loggedIn) { if (typeof showToast === 'function') showToast('이메일 알림은 로그인 후 이용할 수 있어요'); return; }
     _notifDraft[key] = !_notifDraft[key];
     paintNotifToggles();
   };
   window.saveNotifSettings = function() {
-    if (_notifDraft) saveNotifPrefs(_notifDraft);
+    if (_notifDraft) {
+      saveNotifPrefs({ master: _notifDraft.master, expiring: _notifDraft.expiring, eligibility: _notifDraft.eligibility, newmatch: _notifDraft.newmatch });
+      // 이메일 수신 여부는 서버(프로필)에 저장 — 백엔드가 이걸 보고 발송
+      if (_notifDraft._loggedIn && window.userProfile) {
+        const prev = !!window.userProfile.email_optin;
+        window.userProfile.email_optin = !!_notifDraft.email;
+        if (prev !== !!_notifDraft.email && typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+      }
+    }
     closeModal('Notif');
     if (typeof renderNotifBadge === 'function') renderNotifBadge();
     if (typeof renderNotifPanel === 'function') renderNotifPanel();
