@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.52 (정책 검색·전체 둘러보기)</title>
+<title>PinHome · v0.55 (둘러보기 행 정렬 수정)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1583,6 +1583,14 @@
   .bp-now{background:var(--em-soft);color:var(--em-text);}
   .bp-soon{background:var(--warn-soft);color:var(--warn);}
   .bp-no{background:rgba(150,150,150,.15);color:var(--ink-mute);}
+  /* v0.55 전체 둘러보기 행 */
+  .brow-item{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .brow-item:last-child{border-bottom:none;}
+  .brow-item[data-no="1"]{opacity:.6;}
+  .brow-body{flex:1;min-width:0;}
+  .brow-title{font-size:15px;font-weight:700;color:var(--ink);margin-top:3px;line-height:1.35;}
+  .brow-badges{display:flex;gap:6px;align-items:center;margin-top:7px;flex-wrap:wrap;}
+  .brow-arrow{color:var(--ink-hint);font-size:18px;flex-shrink:0;}
 
   /* ============================================ */
   /* ★ v0.9 NEW — Onboarding Fullscreen Flow */
@@ -2441,7 +2449,7 @@
     <div class="search-wrap">
       <div class="search-field">
         <i class="ti ti-search search-ic"></i>
-        <input id="policySearch" class="search-input" type="search" placeholder="정책 이름·기관 검색" oninput="onSearchInput(this.value)" />
+        <input id="policySearch" class="search-input" type="search" name="pinhome-policy-search" placeholder="정책 이름·기관 검색" oninput="onSearchInput(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" />
       </div>
       <button id="browseToggle" class="browse-btn" onclick="toggleBrowseAll()">전체 둘러보기</button>
     </div>
@@ -5583,21 +5591,22 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     const cnt = document.getElementById('countBrowse');
     if (!sec || !list) return;
     sec.style.display = '';
-    const nowIds = new Set(data.now.map(r => r.policy_id));
-    const soonIds = new Set(data.soon.map(r => r.policy_id));
-    let items = [...(data.all || [])];
+    // 내게 평가된 정책만(내 지역+전국). 상태는 소속 섹션 그대로 → 개수·딱지가 정확.
+    let items = [
+      ...data.now.map(r => ({ r, status:'now' })),
+      ...data.soon.map(r => ({ r, status:'soon' })),
+      ...data.no.map(r => ({ r, status:'no' })),
+    ];
     if (filterCat && filterCat !== 'all') {
-      items = items.filter(r => { const p = window.PinHomePolicies.find(x => x.id === r.policy_id); return p && p.category === filterCat; });
+      items = items.filter(x => { const p = window.PinHomePolicies.find(y => y.id === x.r.policy_id); return p && p.category === filterCat; });
     }
-    if (q) items = items.filter(r => policyMatchesQuery(window.PinHomePolicies.find(p => p.id === r.policy_id), q));
-    const rank = r => nowIds.has(r.policy_id) ? 0 : soonIds.has(r.policy_id) ? 1 : 2;
-    items.sort((a,b) => rank(a) - rank(b));
+    if (q) items = items.filter(x => policyMatchesQuery(window.PinHomePolicies.find(p => p.id === x.r.policy_id), q));
     if (cnt) cnt.textContent = items.length;
     if (!items.length) {
       list.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--ink-hint);font-size:13px">검색 결과가 없어요</div>';
       return;
     }
-    list.innerHTML = items.map(r => renderBrowseRow(r, nowIds.has(r.policy_id) ? 'now' : soonIds.has(r.policy_id) ? 'soon' : 'no')).join('');
+    list.innerHTML = items.map(x => renderBrowseRow(x.r, x.status)).join('');
   }
 
   function renderBrowseRow(result, status){
@@ -5608,13 +5617,13 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       : status === 'soon' ? '<span class="bp-pill bp-soon">곧 가능</span>'
       : '<span class="bp-pill bp-no">조건 미달</span>';
     const ddl = deadlineBadge(p);
-    return '<div class="row" onclick="openDetail(\'' + result.policy_id + '\')" style="cursor:pointer' + (status === 'no' ? ';opacity:0.62' : '') + '">'
-      + '<div class="row-body">'
+    return '<div class="brow-item"' + (status === 'no' ? ' data-no="1"' : '') + ' onclick="openDetail(\'' + result.policy_id + '\')">'
+      + '<div class="brow-body">'
       + '<div class="row-cat">' + cat + ' · ' + (p.source_org || '') + '</div>'
-      + '<div class="row-title">' + p.title + '</div>'
-      + '<div style="display:flex;gap:6px;align-items:center;margin-top:5px;flex-wrap:wrap">' + pill + ddl + '</div>'
+      + '<div class="brow-title">' + p.title + '</div>'
+      + '<div class="brow-badges">' + pill + ddl + '</div>'
       + '</div>'
-      + '<div class="row-arrow"><i class="ti ti-chevron-right"></i></div>'
+      + '<i class="ti ti-chevron-right brow-arrow"></i>'
       + '</div>';
   }
 
