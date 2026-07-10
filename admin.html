@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome 백오피스 · v0.12 (신청 서류 입력)</title>
+<title>PinHome 백오피스 · v0.13 (AI 서류 생성)</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -192,7 +192,7 @@
     <input type="password" class="login-input" id="pwInput" placeholder="관리자 비밀번호" autocomplete="current-password" />
     <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
     <div class="login-err" id="loginErr"></div>
-    <div class="login-foot">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠 · v0.12</div>
+    <div class="login-foot">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠 · v0.13</div>
   </div>
 </div>
 
@@ -229,7 +229,7 @@
         <div class="page-title">정책 목록</div>
         <div class="page-sub" id="counts">불러오는 중…</div>
       </div>
-      <div class="head-actions"><button class="sel" onclick="loadPolicies()" title="새로고침"><i class="ti ti-refresh"></i></button></div>
+      <div class="head-actions"><button class="sel" id="bulkDocsBtn" onclick="bulkGenDocs()" title="서류 없는 정책 AI로 채우기"><i class="ti ti-sparkles"></i> 서류 일괄 채우기</button><button class="sel" onclick="loadPolicies()" title="새로고침"><i class="ti ti-refresh"></i></button></div>
     </div>
 
     <div class="banner" id="optBanner" style="display:none">
@@ -339,7 +339,9 @@
     <div class="field"><label>소관기관</label><input id="edF_source_org" oninput="onField('source_org',this.value)"></div>
     <div class="field"><label>기준일 (as_of)</label><input id="edF_as_of" oninput="onField('as_of',this.value)"></div>
     <div class="field"><label>신청 마감일 (선택) — 앱에 ‘마감 임박’ 배지로 표시</label><input id="edF_application_deadline" type="date" oninput="onField('application_deadline',this.value)"></div>
-    <div class="field"><label>신청 서류 (한 줄에 하나씩) — 앱 상세에 체크리스트로 표시</label><textarea id="edF_required_documents" rows="5" placeholder="예)&#10;주민등록등본&#10;가족관계증명서&#10;소득금액증명원" oninput="onDocsField(this.value)"></textarea></div>
+    <div class="field"><label>신청 서류 (한 줄에 하나씩) — 앱 상세에 체크리스트로 표시</label><textarea id="edF_required_documents" rows="5" placeholder="예)&#10;주민등록등본&#10;가족관계증명서&#10;소득금액증명원" oninput="onDocsField(this.value)"></textarea>
+      <button id="edGenDocsBtn" onclick="genDocsForCurrent()" style="margin-top:8px;background:var(--em-soft);color:var(--em);border:1px solid var(--em-line);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-sparkles"></i> AI로 서류 채우기</button>
+    </div>
     <button class="adv-toggle" onclick="toggleAdv()"><i class="ti ti-code"></i><span id="advLabel">고급 편집 (전체 JSON) 열기</span></button>
     <div class="field" id="edAdv" style="display:none">
       <textarea id="edJson" rows="18" spellcheck="false" oninput="onJsonEdit()"></textarea>
@@ -513,6 +515,44 @@
   function setF(k,v){ const el=document.getElementById('edF_'+k); if(el) el.value = (v==null?'':v); }
   function setDocsF(arr){ const el=document.getElementById('edF_required_documents'); if(el) el.value = Array.isArray(arr)? arr.join('\n') : ''; }
   function onDocsField(v){ if(!cur) return; const arr=String(v||'').split('\n').map(s=>s.trim()).filter(Boolean); if(arr.length) cur.required_documents=arr; else delete cur.required_documents; syncJson(); }
+
+  async function genDocsForCurrent(){
+    if(!cur) return;
+    const btn=document.getElementById('edGenDocsBtn'); const orig=btn.innerHTML;
+    btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i> 생성 중…';
+    try{
+      const r=await api('gen_docs',{ policy:{ title:cur.title, category:cur.category, short_desc:cur.short_desc, rules:cur.rules } });
+      if(r && Array.isArray(r.documents) && r.documents.length){
+        cur.required_documents=r.documents; setDocsF(cur.required_documents); syncJson();
+        toast('AI가 서류 '+r.documents.length+'개를 채웠어요. 확인 후 저장하세요');
+      } else { toast('서류를 못 만들었어요. 다시 시도해주세요'); }
+    }catch(e){ toast('실패: '+(e.message||e)); }
+    finally{ btn.disabled=false; btn.innerHTML=orig; }
+  }
+
+  async function bulkGenDocs(){
+    const targets = policies.filter(p => !(p.data && Array.isArray(p.data.required_documents) && p.data.required_documents.length));
+    if(!targets.length){ toast('서류가 비어 있는 정책이 없어요 (모두 채워져 있음)'); return; }
+    if(!confirm('서류가 비어 있는 정책 '+targets.length+'개를 AI로 채울까요?\n정책당 몇 초씩 걸려서 전체로는 몇 분 걸릴 수 있어요.\n(중간에 창을 닫으면 거기까지만 저장돼요.)')) return;
+    const btn=document.getElementById('bulkDocsBtn'); const orig=btn?btn.innerHTML:'';
+    if(btn){ btn.disabled=true; }
+    let ok=0, fail=0;
+    for(let i=0;i<targets.length;i++){
+      const p=targets[i];
+      if(btn) btn.innerHTML='<i class="ti ti-loader"></i> '+(i+1)+'/'+targets.length;
+      try{
+        const r=await api('gen_docs',{ policy:{ title:p.title||(p.data&&p.data.title), category:p.category||(p.data&&p.data.category), short_desc:p.data&&p.data.short_desc, rules:p.data&&p.data.rules } });
+        if(r && Array.isArray(r.documents) && r.documents.length){
+          const data=Object.assign({}, p.data||{}); data.required_documents=r.documents;
+          await api('save',{ id:p.id, data });
+          p.data=data; ok++;
+        } else fail++;
+      }catch(e){ fail++; }
+      await new Promise(res=>setTimeout(res, 400));
+    }
+    if(btn){ btn.disabled=false; btn.innerHTML=orig; }
+    render(); toast('완료 — 성공 '+ok+'개'+(fail?(' / 실패 '+fail+'개'):''));
+  }
   function onField(k,v){ if(!cur) return; cur[k]=v; if(k==='title') document.getElementById('edTitle').textContent=v||'(제목 없음)'; syncJson(); }
   function updateEditorActive(on){ const t=document.getElementById('edActive'); t.classList.toggle('on',!!on); document.getElementById('edActiveLabel').textContent=on?'활성':'비활성'; }
   function toggleActiveFromEditor(){ if(curIdx>=0) toggleActive(curIdx); }
