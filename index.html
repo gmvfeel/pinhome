@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.47 (이메일 알림 수신 옵션)</title>
+<title>PinHome · v0.48 (브라우저 푸시 알림)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -3133,6 +3133,10 @@
         <div><div class="nset-t">이메일로도 받기</div><div class="nset-d" id="nsetEmailDesc">마감 임박 정책을 가입 이메일로 보내드려요</div></div>
         <button class="nset-toggle" id="nset_email" onclick="toggleNset('email')"></button>
       </div>
+      <div class="nset-row">
+        <div><div class="nset-t">브라우저 푸시로 받기</div><div class="nset-d" id="nsetPushDesc">앱을 안 켜도 기기로 알림을 보내드려요</div></div>
+        <button class="nset-toggle" id="nset_push" onclick="toggleNset('push')"></button>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="onboard-btn-back" onclick="closeModal('Notif')">취소</button>
@@ -5660,6 +5664,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
           elder_parent: up.elder_parent || null,
           residence_years: up.residence_years || null,
           email_optin: !!up.email_optin,
+          push_optin: !!up.push_optin,
+          push_sub: up.push_sub || null,
         },
         onboarded_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -5702,6 +5708,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       up.elder_parent = ex.elder_parent || null;
       up.residence_years = ex.residence_years || null;
       up.email_optin = !!ex.email_optin;
+      up.push_optin = !!ex.push_optin;
+      up.push_sub = ex.push_sub || null;
       return true;
     } catch (e) { console.error(e); return false; }
   }
@@ -6489,16 +6497,72 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
   }
   function saveNotifPrefs(p) { try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(p)); } catch (e) {} }
 
+  // ===== 브라우저 푸시 (Web Push) =====
+  const VAPID_PUBLIC_KEY = 'BHj2YraVUwksWogs7Pdia0_cMmdO-8ih3cEIlJxHZFYGJJXphwOT--O3sW-pIrWhtTtscgOp9fWlTL1pQRnuCOM';
+  function urlB64ToUint8(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64); const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+  function pushSupported() {
+    return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+  }
+  async function enablePush() {
+    try {
+      if (!pushSupported()) { if (typeof showToast === 'function') showToast('이 브라우저는 푸시를 지원하지 않아요'); return false; }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { if (typeof showToast === 'function') showToast('브라우저에서 알림을 허용해야 푸시를 받을 수 있어요'); return false; }
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC_KEY) });
+      if (window.userProfile) {
+        window.userProfile.push_optin = true;
+        window.userProfile.push_sub = sub.toJSON();
+        if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+      }
+      if (typeof showToast === 'function') showToast('브라우저 푸시를 켰어요');
+      return true;
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('푸시 설정 중 문제가 생겼어요: ' + (e.message || e));
+      return false;
+    }
+  }
+  async function disablePush() {
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) { const sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); }
+      }
+    } catch (e) {}
+    if (window.userProfile) {
+      window.userProfile.push_optin = false;
+      window.userProfile.push_sub = null;
+      if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+    }
+    if (typeof showToast === 'function') showToast('브라우저 푸시를 껐어요');
+  }
+  async function handlePushToggle() {
+    if (!_notifDraft) return;
+    if (!_notifDraft._loggedIn) { if (typeof showToast === 'function') showToast('푸시 알림은 로그인 후 이용할 수 있어요'); return; }
+    if (!_notifDraft.push) { const ok = await enablePush(); if (ok) _notifDraft.push = true; }
+    else { await disablePush(); _notifDraft.push = false; }
+    paintNotifToggles();
+  }
+
   let _notifDraft = null;
   window.openNotifSettings = function() {
     _notifDraft = loadNotifPrefs();
     _notifDraft._loggedIn = !!(window.getPinhomeUser && window.getPinhomeUser());
     _notifDraft.email = !!(window.userProfile && window.userProfile.email_optin);
+    _notifDraft.push = !!(window.userProfile && window.userProfile.push_optin);
     paintNotifToggles();
     openModal('Notif');
   };
   function paintNotifToggles() {
-    ['master', 'expiring', 'eligibility', 'newmatch', 'email'].forEach(k => {
+    ['master', 'expiring', 'eligibility', 'newmatch', 'email', 'push'].forEach(k => {
       const el = document.getElementById('nset_' + k);
       if (el) el.classList.toggle('on', !!_notifDraft[k]);
     });
@@ -6509,9 +6573,16 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       if (!_notifDraft._loggedIn) { desc.textContent = '로그인하면 가입 이메일로 받을 수 있어요'; et.style.opacity = '0.4'; }
       else { desc.textContent = '마감 임박 정책을 가입 이메일로 보내드려요'; et.style.opacity = ''; }
     }
+    const pdesc = document.getElementById('nsetPushDesc'), pt = document.getElementById('nset_push');
+    if (pdesc && pt) {
+      if (!pushSupported()) { pdesc.textContent = '이 브라우저/기기는 푸시를 지원하지 않아요'; pt.style.opacity = '0.4'; }
+      else if (!_notifDraft._loggedIn) { pdesc.textContent = '로그인하면 푸시를 받을 수 있어요'; pt.style.opacity = '0.4'; }
+      else { pdesc.textContent = '앱을 안 켜도 기기로 알림을 보내드려요'; pt.style.opacity = ''; }
+    }
   }
   window.toggleNset = function(key) {
     if (!_notifDraft) return;
+    if (key === 'push') { handlePushToggle(); return; }
     if (key === 'email' && !_notifDraft._loggedIn) { if (typeof showToast === 'function') showToast('이메일 알림은 로그인 후 이용할 수 있어요'); return; }
     _notifDraft[key] = !_notifDraft[key];
     paintNotifToggles();
