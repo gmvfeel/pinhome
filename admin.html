@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PinHome 백오피스 · v0.1 (정책 목록)</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0A0E1A; --surface:#131826; --surface-2:#1A2033; --surface-elev:#232B42;
+    --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.14);
+    --ink:#fff; --ink-soft:rgba(255,255,255,.7); --ink-mute:rgba(255,255,255,.4);
+    --em:#00D9A3; --em-soft:rgba(0,217,163,.12); --em-line:rgba(0,217,163,.3); --em-deep:#00B284;
+    --amber:#F2A623; --amber-soft:rgba(242,166,35,.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard Variable',Pretendard,-apple-system,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+
+  /* ===== 로그인 ===== */
+  .login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;}
+  .login-card{width:100%;max-width:360px;text-align:center;}
+  .login-mark{width:56px;height:56px;margin:0 auto 18px;background:var(--em);border-radius:16px;display:flex;align-items:center;justify-content:center;}
+  .login-mark::after{content:'';width:18px;height:18px;background:var(--bg);border-radius:50%;}
+  .login-title{font-size:19px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;}
+  .login-sub{font-size:13px;color:var(--ink-mute);margin-bottom:26px;}
+  .login-input{width:100%;padding:14px 16px;background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);font-size:15px;outline:none;transition:border-color .15s;}
+  .login-input:focus{border-color:var(--em-line);}
+  .login-btn{width:100%;margin-top:12px;padding:14px;background:var(--em);color:#04211A;border:none;border-radius:12px;font-size:15px;font-weight:800;transition:transform .12s;}
+  .login-btn:hover{transform:translateY(-1px);}
+  .login-btn:disabled{opacity:.6;cursor:default;transform:none;}
+  .login-err{margin-top:14px;font-size:13px;color:#FF6B6B;min-height:18px;}
+
+  /* ===== 레이아웃 ===== */
+  .app{display:none;min-height:100vh;}
+  .app.on{display:flex;}
+  .side{width:186px;flex-shrink:0;background:#0D1220;border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;}
+  .side-brand{display:flex;align-items:center;gap:8px;padding:0 6px 22px;}
+  .side-logo{width:24px;height:24px;background:var(--em);border-radius:7px;display:flex;align-items:center;justify-content:center;}
+  .side-logo::after{content:'';width:8px;height:8px;background:var(--bg);border-radius:50%;}
+  .side-name{font-size:14px;font-weight:800;letter-spacing:-.03em;}
+  .side-nav{display:flex;flex-direction:column;gap:2px;}
+  .side-item{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:9px;border:none;background:none;color:var(--ink-soft);font-size:13.5px;text-align:left;width:100%;transition:background .12s,color .12s;}
+  .side-item i{font-size:17px;}
+  .side-item:hover{color:var(--ink);background:var(--surface);}
+  .side-item.on{background:var(--em-soft);color:var(--em);font-weight:600;}
+  .side-item.soon{color:var(--ink-mute);}
+  .side-item.soon:hover{color:var(--ink-soft);background:transparent;}
+  .side-badge{margin-left:auto;font-size:10px;color:var(--ink-mute);background:var(--surface-2);padding:2px 6px;border-radius:10px;}
+  .side-foot{margin-top:auto;padding-top:12px;}
+  .logout-btn{display:flex;align-items:center;gap:8px;width:100%;padding:10px 11px;border:none;background:none;color:var(--ink-mute);font-size:13px;border-radius:9px;}
+  .logout-btn:hover{color:var(--ink-soft);background:var(--surface);}
+
+  .main{flex:1;min-width:0;padding:24px 26px 60px;}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+  .page-title{font-size:20px;font-weight:800;letter-spacing:-.03em;}
+  .page-sub{font-size:12.5px;color:var(--ink-mute);margin-top:4px;}
+  .page-sub b{color:var(--em);font-weight:700;}
+  .head-actions{display:flex;align-items:center;gap:8px;}
+
+  .banner{display:flex;align-items:center;gap:10px;background:var(--amber-soft);border:1px solid rgba(242,166,35,.25);color:var(--amber);border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:16px;}
+  .banner i{font-size:17px;flex-shrink:0;}
+
+  .filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .search-wrap{position:relative;flex:1;min-width:180px;max-width:340px;}
+  .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-mute);font-size:16px;}
+  .search{width:100%;padding:10px 12px 10px 34px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:13.5px;outline:none;}
+  .search:focus{border-color:var(--em-line);}
+  .sel{padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;color:var(--ink-soft);font-size:13px;outline:none;}
+  .sel:focus{border-color:var(--em-line);}
+
+  .table{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .thead,.trow{display:grid;grid-template-columns:2.6fr 1fr 1fr 1.1fr;gap:10px;align-items:center;}
+  .thead{padding:12px 18px;background:rgba(255,255,255,.03);color:var(--ink-mute);font-size:11.5px;font-weight:600;}
+  .trow{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;}
+  .trow:hover{background:rgba(255,255,255,.02);}
+  .t-title{color:var(--ink);font-weight:500;}
+  .t-id{color:var(--ink-mute);font-size:11px;margin-top:2px;}
+  .t-cat{color:var(--ink-soft);}
+  .pill{display:inline-flex;align-items:center;font-size:11.5px;padding:3px 10px;border-radius:20px;}
+  .pill.req{background:var(--em-soft);color:var(--em);}
+  .pill.opt{background:var(--amber-soft);color:var(--amber);}
+  .pill.none{background:rgba(255,255,255,.06);color:var(--ink-mute);}
+  .toggle{position:relative;width:40px;height:22px;border-radius:12px;border:none;background:var(--line-strong);transition:background .15s;flex-shrink:0;}
+  .toggle.on{background:var(--em);}
+  .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s;}
+  .toggle.on::after{transform:translateX(18px);}
+  .toggle:disabled{opacity:.4;cursor:not-allowed;}
+  .status-cell{display:flex;align-items:center;gap:9px;}
+  .status-cell span{font-size:12px;color:var(--ink-mute);}
+
+  .empty{padding:40px;text-align:center;color:var(--ink-mute);font-size:13.5px;}
+  .loading{padding:40px;text-align:center;color:var(--ink-mute);font-size:13.5px;}
+
+  /* 토스트 */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface-elev);color:var(--ink);padding:12px 20px;border-radius:10px;font-size:13.5px;border:1px solid var(--line-strong);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200;}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:720px){
+    .app.on{flex-direction:column;}
+    .side{width:100%;flex-direction:row;overflow-x:auto;padding:12px;border-right:none;border-bottom:1px solid var(--line);align-items:center;}
+    .side-brand{padding:0 10px 0 4px;}
+    .side-nav{flex-direction:row;gap:4px;}
+    .side-item{white-space:nowrap;padding:9px 12px;}
+    .side-item .side-badge{display:none;}
+    .side-foot{margin-top:0;margin-left:auto;padding-top:0;}
+    .main{padding:18px 16px 50px;}
+    .thead{display:none;}
+    .trow{grid-template-columns:1fr auto;row-gap:8px;padding:14px 16px;}
+    .trow .t-cat,.trow .t-income{grid-column:1;font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login" id="login">
+  <div class="login-card">
+    <div class="login-mark"></div>
+    <div class="login-title">PinHome 백오피스</div>
+    <div class="login-sub">관리자 비밀번호를 입력해주세요</div>
+    <input type="password" class="login-input" id="pwInput" placeholder="비밀번호" autocomplete="current-password" />
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 관리 화면 -->
+<div class="app" id="app">
+  <aside class="side">
+    <div class="side-brand"><div class="side-logo"></div><div class="side-name">PinHome 관리</div></div>
+    <nav class="side-nav">
+      <button class="side-item on"><i class="ti ti-list-details"></i>정책 목록</button>
+      <button class="side-item soon" onclick="soon()"><i class="ti ti-edit"></i>정책 편집<span class="side-badge">준비 중</span></button>
+      <button class="side-item soon" onclick="soon()"><i class="ti ti-sparkles"></i>AI 변환<span class="side-badge">준비 중</span></button>
+      <button class="side-item soon" onclick="soon()"><i class="ti ti-adjustments"></i>기준값<span class="side-badge">준비 중</span></button>
+      <button class="side-item soon" onclick="soon()"><i class="ti ti-chart-bar"></i>통계<span class="side-badge">준비 중</span></button>
+      <button class="side-item soon" onclick="soon()"><i class="ti ti-users"></i>회원<span class="side-badge">준비 중</span></button>
+    </nav>
+    <div class="side-foot">
+      <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i>로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div>
+        <div class="page-title">정책 목록</div>
+        <div class="page-sub" id="counts">불러오는 중…</div>
+      </div>
+      <div class="head-actions">
+        <button class="sel" onclick="loadPolicies()" title="새로고침"><i class="ti ti-refresh"></i></button>
+      </div>
+    </div>
+
+    <div class="banner" id="optBanner" style="display:none">
+      <i class="ti ti-alert-triangle"></i>
+      <span id="optBannerText"></span>
+    </div>
+
+    <div class="filters">
+      <div class="search-wrap"><i class="ti ti-search"></i><input class="search" id="q" placeholder="제목으로 검색" oninput="render()"></div>
+      <select class="sel" id="fCat" onchange="render()"><option value="">전체 카테고리</option></select>
+      <select class="sel" id="fStatus" onchange="render()">
+        <option value="">전체 상태</option><option value="on">활성만</option><option value="off">비활성만</option>
+      </select>
+      <select class="sel" id="fIncome" onchange="render()">
+        <option value="">전체 소득조건</option><option value="required">필수</option><option value="optional">선택(문제)</option><option value="none">없음</option>
+      </select>
+    </div>
+
+    <div class="table">
+      <div class="thead"><div>제목</div><div>카테고리</div><div>소득조건</div><div>상태</div></div>
+      <div id="rows"><div class="loading">불러오는 중…</div></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ===== 설정 =====
+  const SUPABASE_URL = 'https://bfgyndtygqpwqnmqirtl.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_zh4_MtzjfIKP-VoUz4nW8g_RFOF77mb';
+  const BACKEND_URL  = 'https://wxn-gemini-proxy.vercel.app/api/policy-to-pinhome';
+
+  const CAT_LABEL = { loan:'대출', subscription:'청약', jeonse:'전월세', rent:'전월세', wolse:'전월세', subsidy:'보조금', guarantee:'보증', other:'기타' };
+
+  let sb = null;
+  let policies = [];   // 원본 행 목록
+
+  // ===== 유틸 =====
+  function getPw(){ return sessionStorage.getItem('ph_admin_pw') || ''; }
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('on');
+    clearTimeout(window._tt); window._tt = setTimeout(()=>t.classList.remove('on'), 2600);
+  }
+  function soon(){ toast('다음 단계에서 준비 중이에요'); }
+  function catLabel(c){ return CAT_LABEL[c] || c || '기타'; }
+
+  // 정책의 소득조건 상태: 'required' / 'optional'(문제) / 'none'
+  function incomeState(row){
+    const rules = (row.data && row.data.rules) || [];
+    const inc = rules.filter(r => typeof r.type === 'string' && r.type.indexOf('income') !== -1);
+    if (inc.length === 0) return 'none';
+    return inc.some(r => r.required !== true) ? 'optional' : 'required';
+  }
+
+  // ===== 백엔드 호출 =====
+  async function api(action, extra){
+    const res = await fetch(BACKEND_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({ password:getPw(), action }, extra||{}))
+    });
+    let data = {};
+    try { data = await res.json(); } catch(e){}
+    if (res.status === 401){ logout(); throw new Error('로그인이 만료됐어요'); }
+    if (!res.ok) throw new Error(data.error || ('오류 ' + res.status));
+    return data;
+  }
+
+  // ===== 로그인 =====
+  async function doLogin(){
+    const pw = document.getElementById('pwInput').value.trim();
+    const err = document.getElementById('loginErr');
+    const btn = document.getElementById('loginBtn');
+    err.textContent = '';
+    if (!pw){ err.textContent = '비밀번호를 입력해주세요'; return; }
+    btn.disabled = true; btn.textContent = '확인 중…';
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ password:pw, action:'published_ids' })
+      });
+      if (res.status === 401){ err.textContent = '비밀번호가 올바르지 않아요'; return; }
+      if (!res.ok){ err.textContent = '서버 연결에 문제가 있어요 (' + res.status + ')'; return; }
+      sessionStorage.setItem('ph_admin_pw', pw);
+      enterApp();
+    } catch(e){
+      err.textContent = '서버에 연결할 수 없어요. 주소를 확인해주세요.';
+    } finally {
+      btn.disabled = false; btn.textContent = '로그인';
+    }
+  }
+
+  function logout(){
+    sessionStorage.removeItem('ph_admin_pw');
+    document.getElementById('app').classList.remove('on');
+    document.getElementById('login').style.display = 'flex';
+    document.getElementById('pwInput').value = '';
+  }
+
+  function enterApp(){
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').classList.add('on');
+    if (!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    loadPolicies();
+  }
+
+  // ===== 정책 불러오기 =====
+  async function loadPolicies(){
+    document.getElementById('rows').innerHTML = '<div class="loading">불러오는 중…</div>';
+    try {
+      const { data, error } = await sb
+        .from('pinhome_policies')
+        .select('id,title,category,is_active,sort_order,data')
+        .order('sort_order', { ascending:true });
+      if (error) throw error;
+      policies = data || [];
+      buildCategoryFilter();
+      render();
+    } catch(e){
+      document.getElementById('rows').innerHTML = '<div class="empty">정책을 불러오지 못했어요: ' + (e.message||e) + '</div>';
+    }
+  }
+
+  function buildCategoryFilter(){
+    const cats = Array.from(new Set(policies.map(p => p.category).filter(Boolean)));
+    const sel = document.getElementById('fCat');
+    sel.innerHTML = '<option value="">전체 카테고리</option>' + cats.map(c => '<option value="'+c+'">'+catLabel(c)+'</option>').join('');
+  }
+
+  // ===== 렌더링 =====
+  function render(){
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const fCat = document.getElementById('fCat').value;
+    const fStatus = document.getElementById('fStatus').value;
+    const fIncome = document.getElementById('fIncome').value;
+
+    const activeN = policies.filter(p => p.is_active).length;
+    const optN = policies.filter(p => incomeState(p) === 'optional').length;
+    document.getElementById('counts').innerHTML =
+      '전체 ' + policies.length + '개 · 활성 <b>' + activeN + '</b>개 · 비활성 ' + (policies.length - activeN) + '개';
+
+    const banner = document.getElementById('optBanner');
+    if (optN > 0){
+      banner.style.display = 'flex';
+      document.getElementById('optBannerText').textContent =
+        '소득조건이 \u2018선택\u2019으로 저장된 정책 ' + optN + '개 — 다음 편집 단계에서 \u2018필수\u2019로 바로잡을 수 있어요. (사용자 앱은 이미 자동 교정 중)';
+    } else banner.style.display = 'none';
+
+    const list = policies.filter(p => {
+      if (q && !((p.title||'').toLowerCase().includes(q) || (p.id||'').toLowerCase().includes(q))) return false;
+      if (fCat && p.category !== fCat) return false;
+      if (fStatus === 'on' && !p.is_active) return false;
+      if (fStatus === 'off' && p.is_active) return false;
+      if (fIncome && incomeState(p) !== fIncome) return false;
+      return true;
+    });
+
+    const box = document.getElementById('rows');
+    if (list.length === 0){ box.innerHTML = '<div class="empty">조건에 맞는 정책이 없어요</div>'; return; }
+
+    box.innerHTML = list.map((p, i) => {
+      const idx = policies.indexOf(p);
+      const inc = incomeState(p);
+      const incPill = inc === 'required' ? '<span class="pill req">필수</span>'
+        : inc === 'optional' ? '<span class="pill opt">선택</span>'
+        : '<span class="pill none">없음</span>';
+      const isAuto = (p.id||'').startsWith('auto_');
+      const toggleDisabled = isAuto ? '' : 'disabled title="직접 만든 정책은 편집 단계에서 지원돼요"';
+      return '<div class="trow">'
+        + '<div><div class="t-title">' + escapeHtml(p.title||'(제목 없음)') + '</div><div class="t-id">' + escapeHtml(p.id||'') + '</div></div>'
+        + '<div class="t-cat">' + catLabel(p.category) + '</div>'
+        + '<div class="t-income">' + incPill + '</div>'
+        + '<div class="status-cell"><button class="toggle ' + (p.is_active?'on':'') + '" ' + toggleDisabled + ' onclick="toggleActive(' + idx + ')"></button><span>' + (p.is_active?'활성':'비활성') + '</span></div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ===== 활성/비활성 전환 =====
+  async function toggleActive(idx){
+    const row = policies[idx];
+    if (!row) return;
+    if (!(row.id||'').startsWith('auto_')){ toast('직접 만든 정책은 편집 단계에서 지원돼요'); return; }
+    const sid = row.id.replace(/^auto_/, '');
+    const next = !row.is_active;
+    try {
+      await api('set_active', { service_id: sid, activate: next });
+      row.is_active = next;
+      render();
+      toast(next ? '활성화했어요' : '비활성화했어요');
+    } catch(e){
+      toast('변경 실패: ' + (e.message||e));
+    }
+  }
+
+  // ===== 시작 =====
+  document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  if (getPw()) enterApp();
+</script>
+</body>
+</html>
