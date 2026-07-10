@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.56 (둘러보기 풍성한 행·타지역 제외·자동완성 차단)</title>
+<title>PinHome · v0.57 (정책별 마감 리마인더)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1591,6 +1591,14 @@
   .brow-title{font-size:15px;font-weight:700;color:var(--ink);margin-top:3px;line-height:1.35;}
   .brow-badges{display:flex;gap:6px;align-items:center;margin-top:7px;flex-wrap:wrap;}
   .brow-arrow{color:var(--ink-hint);font-size:18px;flex-shrink:0;}
+  /* v0.57 정책별 마감 리마인더 */
+  .rmd-card{background:var(--surface);border:1px solid var(--em-line);border-radius:14px;padding:16px 18px;margin:18px 0;}
+  .rmd-head{font-size:14px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:7px;}
+  .rmd-head i{color:var(--em-text);}
+  .rmd-desc{font-size:12px;color:var(--ink-hint);margin-top:4px;}
+  .rmd-opts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .rmd-opt{flex:1;min-width:60px;background:var(--bg);border:1px solid var(--line);color:var(--ink-soft);border-radius:9px;padding:9px 6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .rmd-opt.on{background:var(--em);color:var(--on-em);border-color:var(--em);}
 
   /* ============================================ */
   /* ★ v0.9 NEW — Onboarding Fullscreen Flow */
@@ -2503,7 +2511,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.57</div>
   </section>
 
   <!-- ============================================ -->
@@ -2612,7 +2620,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.57</div>
   </section>
 
   <!-- ============================================ -->
@@ -2661,7 +2669,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.57</div>
   </section>
 
   <!-- ============================================ -->
@@ -2690,7 +2698,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.57</div>
   </section>
 
 </div>
@@ -5927,6 +5935,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
           email_optin: !!up.email_optin,
           push_optin: !!up.push_optin,
           push_sub: up.push_sub || null,
+          reminders: up.reminders || {},
         },
         onboarded_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -5971,6 +5980,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       up.email_optin = !!ex.email_optin;
       up.push_optin = !!ex.push_optin;
       up.push_sub = ex.push_sub || null;
+      up.reminders = ex.reminders || {};
       return true;
     } catch (e) { console.error(e); return false; }
   }
@@ -7015,6 +7025,37 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
   }
   window.openOfficialSite = openOfficialSite;
 
+  // ★ v0.57 — 정책별 마감 리마인더
+  function reminderBlock(policy){
+    if (!policy.application_deadline) return '';
+    const d0 = new Date(String(policy.application_deadline) + 'T23:59:59');
+    if (!isNaN(d0) && d0.getTime() < Date.now()) return '';   // 이미 마감된 정책은 숨김
+    const up = window.userProfile || {};
+    const cur = (up.reminders && up.reminders[policy.id]) ? parseInt(up.reminders[policy.id], 10) : 0;
+    const opt = (dv, label) => '<button class="rmd-opt' + (cur === dv ? ' on' : '') + '" onclick="setReminder(\'' + policy.id + '\',' + dv + ')">' + label + '</button>';
+    return '<div class="rmd-card">'
+      + '<div class="rmd-head"><i class="ti ti-bell"></i> 마감 알림</div>'
+      + '<div class="rmd-desc">신청 마감 전에 이메일·푸시로 미리 알려드려요</div>'
+      + '<div class="rmd-opts">' + opt(7, '7일 전') + opt(3, '3일 전') + opt(1, '1일 전') + opt(0, '끄기') + '</div>'
+      + '</div>';
+  }
+
+  window.setReminder = async function(policyId, days){
+    const user = window.getPinhomeUser ? window.getPinhomeUser() : null;
+    if (!user) {
+      if (typeof showToast === 'function') showToast('마감 알림은 로그인 후 이용할 수 있어요');
+      if (typeof window.openAuthModal === 'function') window.openAuthModal();
+      return;
+    }
+    const up = window.userProfile; if (!up) return;
+    up.reminders = up.reminders || {};
+    if (days > 0) up.reminders[policyId] = days;
+    else delete up.reminders[policyId];
+    if (typeof saveProfileToServer === 'function') await saveProfileToServer();
+    if (typeof showToast === 'function') showToast(days > 0 ? ('마감 ' + days + '일 전에 알려드릴게요') : '마감 알림을 껐어요');
+    if (window.openDetail) window.openDetail(policyId);   // 카드 갱신
+  };
+
   function renderDetailHTML(policy, result) {
     // 상태 라벨
     let statusBlock = '';
@@ -7158,6 +7199,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       ${reqRulesBlock}
       ${bonusRulesBlock}
       ${bonusAppliedBlock}
+
+      ${reminderBlock(policy)}
 
       <div class="detail-warn">
         매칭 결과는 공개된 자격 요건 기반의 추정값이며, 최종 자격 판정은 발급기관의 심사에 따릅니다. 신청 전 반드시 공식 사이트에서 확인하세요.
