@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.40 (간편확인 화면에도 추가 조건 반영)</title>
+<title>PinHome · v0.41 (비밀번호 변경)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1233,6 +1233,8 @@
   .chips.c4 { grid-template-columns: repeat(4, 1fr); }
   .chips.c3 { grid-template-columns: repeat(3, 1fr); }
   .chips.c2 { grid-template-columns: repeat(2, 1fr); }
+  .pw-input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid rgba(255,255,255,.14); border-radius: 10px; color: var(--ink); font-size: 15px; outline: none; font-family: var(--font); }
+  .pw-input:focus { border-color: var(--em); }
   .chip {
     background: var(--bg);
     border: 1px solid var(--line);
@@ -2563,6 +2565,7 @@
 
       <div class="detail-actions">
         <button class="btn" onclick="editProfile()">내 정보 수정</button>
+        <button class="btn" onclick="openPasswordModal()">비밀번호 변경</button>
         <button class="btn" onclick="window.showToast && window.showToast('알림 기능은 준비 중이에요')">알림 설정</button>
       </div>
     </div>
@@ -3061,6 +3064,34 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modalPassword">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">계정</div>
+        <div class="modal-title">비밀번호 변경</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('Password')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 13px; color: var(--ink-hint); margin-bottom: 20px;">새 비밀번호를 입력해주세요. (6자 이상)</p>
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 8px;">새 비밀번호</div>
+        <input type="password" id="pwNew" class="pw-input" placeholder="새 비밀번호" autocomplete="new-password">
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-bottom: 8px;">새 비밀번호 확인</div>
+        <input type="password" id="pwNew2" class="pw-input" placeholder="한 번 더 입력" autocomplete="new-password">
+      </div>
+      <div id="pwMsg" style="font-size: 12.5px; margin-top: 12px; min-height: 16px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="onboard-btn-back" onclick="closeModal('Password')">취소</button>
+      <button class="onboard-btn-next primary" id="pwSaveBtn" onclick="submitPasswordChange()">변경</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -3340,8 +3371,45 @@
     document.body.style.overflow = '';
   }
 
+  // ====== 비밀번호 변경 ======
+  function openPasswordModal() {
+    const a = document.getElementById('pwNew'); if (a) a.value = '';
+    const b = document.getElementById('pwNew2'); if (b) b.value = '';
+    const m = document.getElementById('pwMsg'); if (m) { m.textContent = ''; }
+    openModal('Password');
+  }
+  window.openPasswordModal = openPasswordModal;
+
+  async function submitPasswordChange() {
+    const p1 = document.getElementById('pwNew').value;
+    const p2 = document.getElementById('pwNew2').value;
+    const msg = document.getElementById('pwMsg');
+    msg.style.color = '#FF6B6B';
+    if (!p1 || p1.length < 6) { msg.textContent = '새 비밀번호는 6자 이상이어야 해요.'; return; }
+    if (p1 !== p2) { msg.textContent = '두 비밀번호가 일치하지 않아요.'; return; }
+    const user = window.getPinhomeUser ? window.getPinhomeUser() : null;
+    if (!user) { msg.textContent = '로그인이 필요해요.'; return; }
+    if (typeof window.pinhomeChangePassword !== 'function') { msg.textContent = '연결 준비 중이에요. 잠시 후 다시 시도해주세요.'; return; }
+    const btn = document.getElementById('pwSaveBtn');
+    btn.disabled = true; btn.textContent = '변경 중...';
+    try {
+      const err = await window.pinhomeChangePassword(p1);
+      if (err) { msg.style.color = '#FF6B6B'; msg.textContent = '변경 실패: ' + err; }
+      else {
+        msg.style.color = 'var(--em)'; msg.textContent = '비밀번호가 변경됐어요.';
+        if (window.showToast) window.showToast('비밀번호가 변경됐어요');
+        setTimeout(() => closeModal('Password'), 900);
+      }
+    } catch (e) {
+      msg.style.color = '#FF6B6B'; msg.textContent = '문제가 생겼어요. 잠시 후 다시 시도해주세요.';
+    } finally {
+      btn.disabled = false; btn.textContent = '변경';
+    }
+  }
+  window.submitPasswordChange = submitPasswordChange;
+
   // 입력 모달 배경 클릭 닫기 (drag-safe: mousedown·mouseup 둘 다 배경에서 일어났을 때만)
-  ['Children', 'Housing', 'Income', 'FirstBuyer', 'ElderParent', 'Residence'].forEach(name => {
+  ['Children', 'Housing', 'Income', 'FirstBuyer', 'ElderParent', 'Residence', 'Password'].forEach(name => {
     const ov = document.getElementById('modal' + name);
     if (ov) {
       let downOnBg = false;
@@ -6826,6 +6894,13 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
 
   window.pinhomeLogout = async function() {
     if (pinhomeSb) await pinhomeSb.auth.signOut();
+  };
+
+  // 로그인한 회원의 비밀번호 변경 (세션이 본인 확인 대신 — 이메일 발송 불필요)
+  window.pinhomeChangePassword = async function(newPw) {
+    if (!pinhomeSb) return '연결 준비 중이에요.';
+    const { error } = await pinhomeSb.auth.updateUser({ password: newPw });
+    return error ? translateAuthError(error.message) : null;
   };
 
   function translateAuthError(m) {
