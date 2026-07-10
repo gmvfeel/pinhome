@@ -75,11 +75,12 @@
 
   .table{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
   .thead,.trow{display:grid;grid-template-columns:2.6fr 1fr 1fr 1.1fr;gap:10px;align-items:center;}
+  .thead>div,.trow>div{min-width:0;}
   .thead{padding:12px 18px;background:rgba(255,255,255,.03);color:var(--ink-mute);font-size:11.5px;font-weight:600;}
   .trow{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px;}
   .trow:hover{background:rgba(255,255,255,.02);}
   .t-title{color:var(--ink);font-weight:500;}
-  .t-id{color:var(--ink-mute);font-size:11px;margin-top:2px;}
+  .t-id{color:var(--ink-mute);font-size:11px;margin-top:2px;word-break:break-all;}
   .t-cat{color:var(--ink-soft);}
   .pill{display:inline-flex;align-items:center;font-size:11.5px;padding:3px 10px;border-radius:20px;}
   .pill.req{background:var(--em-soft);color:var(--em);}
@@ -188,7 +189,7 @@
   const SUPABASE_KEY = 'sb_publishable_zh4_MtzjfIKP-VoUz4nW8g_RFOF77mb';
   const BACKEND_URL  = 'https://wxn-gemini-proxy.vercel.app/api/policy-to-pinhome';
 
-  const CAT_LABEL = { loan:'대출', subscription:'청약', jeonse:'전월세', rent:'전월세', wolse:'전월세', subsidy:'보조금', guarantee:'보증', other:'기타' };
+  const CAT_LABEL = { loan:'대출', subscription:'청약', subscription_account:'청약', jeonse:'전월세', rent:'전월세', rental:'전월세', wolse:'전월세', lease:'전월세', subsidy:'보조금', grant:'보조금', guarantee:'보증', deposit_guarantee:'보증', other:'기타' };
 
   let sb = null;
   let policies = [];   // 원본 행 목록
