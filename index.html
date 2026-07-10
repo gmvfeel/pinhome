@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.32 (비상용 정책 데이터 서버 동기화)</title>
+<title>PinHome · v0.33 (랜딩페이지 + 파비콘 추가)</title>
+<!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2044,6 +2047,117 @@
 <body>
 
 <!-- ============================================ -->
+<!-- ★ v0.33 — 랜딩 (첫 방문 소개 화면) -->
+<!-- ============================================ -->
+<style>
+  .ph-landing{
+    position:fixed; inset:0; z-index:10000;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg); overflow:hidden;
+    animation:phLandIn .5s ease both;
+  }
+  .ph-landing[hidden]{ display:none; }
+  .ph-landing.leaving{ animation:phLandOut .4s ease forwards; }
+  @keyframes phLandIn{ from{opacity:0} to{opacity:1} }
+  @keyframes phLandOut{ from{opacity:1} to{opacity:0; visibility:hidden} }
+  .ph-landing::before{
+    content:''; position:absolute; width:640px; height:640px;
+    top:-180px; left:50%; transform:translateX(-50%);
+    background:radial-gradient(circle, var(--em-soft) 0%, transparent 70%);
+    filter:blur(24px); pointer-events:none;
+  }
+  .ph-landing::after{
+    content:''; position:absolute; width:520px; height:520px;
+    bottom:-220px; right:-140px;
+    background:radial-gradient(circle, var(--em-soft) 0%, transparent 70%);
+    filter:blur(24px); pointer-events:none;
+  }
+  .ph-land-inner{
+    position:relative; z-index:1; text-align:center;
+    padding:0 28px; max-width:440px;
+    animation:phRise .7s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes phRise{ from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:translateY(0)} }
+  .ph-land-mark{
+    width:72px; height:72px; margin:0 auto 22px;
+    background:var(--em); border-radius:20px;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 12px 40px rgba(0,217,163,.35);
+    animation:phPop .6s cubic-bezier(.2,1.2,.3,1) both;
+  }
+  .ph-land-mark::after{
+    content:''; width:24px; height:24px; background:var(--bg); border-radius:50%;
+  }
+  @keyframes phPop{ from{opacity:0; transform:scale(.6)} to{opacity:1; transform:scale(1)} }
+  .ph-land-brand{
+    font-size:22px; font-weight:800; letter-spacing:-.04em;
+    color:var(--ink); margin-bottom:26px;
+  }
+  .ph-land-title{
+    font-size:30px; line-height:1.28; font-weight:800;
+    letter-spacing:-.035em; color:var(--ink); margin:0 0 16px;
+  }
+  .ph-land-title em{ color:var(--em); font-style:normal; }
+  .ph-land-desc{
+    font-size:15px; line-height:1.6; color:var(--ink-soft);
+    margin:0 0 38px; word-break:keep-all;
+  }
+  .ph-land-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; max-width:320px; padding:16px 28px;
+    background:var(--em); color:#04211A;
+    font-size:16px; font-weight:800; letter-spacing:-.02em;
+    border:none; border-radius:14px; cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,217,163,.3);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .ph-land-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,217,163,.42); }
+  .ph-land-btn:active{ transform:translateY(0); }
+  .ph-land-foot{ margin-top:20px; font-size:12px; color:var(--ink-mute); }
+  @media (max-width:420px){ .ph-land-title{ font-size:26px; } }
+</style>
+
+<div class="ph-landing" id="phLanding" hidden>
+  <div class="ph-land-inner">
+    <div class="ph-land-mark"></div>
+    <div class="ph-land-brand">PinHome</div>
+    <h1 class="ph-land-title">흩어진 정책,<br><em>3분</em> 안에 정리해 드려요</h1>
+    <p class="ph-land-desc">정부·지자체 부동산 정책 중 지금 나에게 맞는 것만 골라서, 지금 받을 수 있는 것부터 알려드려요.</p>
+    <button class="ph-land-btn" onclick="enterFromLanding()">시작하기 <i class="ti ti-arrow-right"></i></button>
+    <div class="ph-land-foot">30초면 첫 결과를 볼 수 있어요</div>
+  </div>
+</div>
+
+<script>
+  // ★ v0.33 — 첫 방문이면 랜딩을 띄우고, 자동 온보딩은 잠시 대기시킴
+  (function(){
+    try{
+      if(!localStorage.getItem('ph_landing_seen')){
+        window._landingActive = true;
+        var el = document.getElementById('phLanding');
+        if(el){ el.hidden = false; document.body.style.overflow = 'hidden'; }
+      }
+    }catch(e){ /* localStorage 사용 불가 환경이면 랜딩 없이 통과 */ }
+  })();
+  // '시작하기' 클릭 → 랜딩을 닫고(다시 안 뜨게 기록), 입력(온보딩)으로 이어짐
+  window.enterFromLanding = function(){
+    try{ localStorage.setItem('ph_landing_seen','1'); }catch(e){}
+    window._landingActive = false;
+    var el = document.getElementById('phLanding');
+    if(el){
+      el.classList.add('leaving');
+      setTimeout(function(){ el.hidden = true; el.classList.remove('leaving'); }, 400);
+    }
+    document.body.style.overflow = '';
+    var up = window.userProfile;
+    var hasProfile = up && up.age_range;
+    if(!hasProfile && typeof window.startOnboard === 'function'){
+      setTimeout(function(){ window.startOnboard(); }, 420);
+    }
+  };
+</script>
+
+<!-- ============================================ -->
 <!-- TOP NAV (desktop) -->
 <!-- ============================================ -->
 <nav class="nav">
@@ -2797,6 +2911,7 @@
   let currentStep = 1;
 
   function startOnboard() {
+    if (window._landingActive) return;  // ★ v0.33 — 랜딩이 떠 있으면 온보딩 대기
     document.getElementById('onboard').classList.add('on');
     document.body.style.overflow = 'hidden';
   }
