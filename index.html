@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PinHome · v0.39 (추가 조건 4종: 생애최초·임신·노부모부양·거주기간)</title>
+<title>PinHome · v0.40 (간편확인 화면에도 추가 조건 반영)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1232,6 +1232,7 @@
   }
   .chips.c4 { grid-template-columns: repeat(4, 1fr); }
   .chips.c3 { grid-template-columns: repeat(3, 1fr); }
+  .chips.c2 { grid-template-columns: repeat(2, 1fr); }
   .chip {
     background: var(--bg);
     border: 1px solid var(--line);
@@ -2450,6 +2451,40 @@
           <button class="chip" data-value="3_5">3~5년</button>
           <button class="chip" data-value="5_10">5~10년</button>
           <button class="chip" data-value="10_plus">10년+</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">생애최초 주택구입</div>
+        <div class="chips c2" data-check-field="first_buyer">
+          <button class="chip" data-value="yes">생애최초예요</button>
+          <button class="chip" data-value="no">아니오</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">현재 임신 중</div>
+        <div class="chips c2" data-check-field="pregnant">
+          <button class="chip" data-value="yes">예</button>
+          <button class="chip" data-value="no">아니오</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">노부모(만 65세+) 3년 이상 부양</div>
+        <div class="chips c2" data-check-field="elder_parent">
+          <button class="chip" data-value="yes">예</button>
+          <button class="chip" data-value="no">아니오</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">현 거주지(시·도) 거주 기간</div>
+        <div class="chips c2" data-check-field="residence_years">
+          <button class="chip" data-value="under_1">1년 미만</button>
+          <button class="chip" data-value="1_3">1~3년</button>
+          <button class="chip" data-value="3_5">3~5년</button>
+          <button class="chip" data-value="5_plus">5년 이상</button>
         </div>
       </div>
 
