@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.55 (둘러보기 행 정렬 수정)</title>
+<title>PinHome · v0.56 (둘러보기 풍성한 행·타지역 제외·자동완성 차단)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2449,7 +2449,7 @@
     <div class="search-wrap">
       <div class="search-field">
         <i class="ti ti-search search-ic"></i>
-        <input id="policySearch" class="search-input" type="search" name="pinhome-policy-search" placeholder="정책 이름·기관 검색" oninput="onSearchInput(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" />
+        <input id="policySearch" class="search-input" type="search" name="pinhome-policy-search" placeholder="정책 이름·기관 검색" oninput="onSearchInput(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" data-lpignore="true" readonly onfocus="this.removeAttribute('readonly')" />
       </div>
       <button id="browseToggle" class="browse-btn" onclick="toggleBrowseAll()">전체 둘러보기</button>
     </div>
@@ -2503,7 +2503,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.55</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
   </section>
 
   <!-- ============================================ -->
@@ -2612,7 +2612,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.55</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
   </section>
 
   <!-- ============================================ -->
@@ -2661,7 +2661,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.55</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
   </section>
 
   <!-- ============================================ -->
@@ -2690,7 +2690,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.55</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.56</div>
   </section>
 
 </div>
@@ -5591,40 +5591,22 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     const cnt = document.getElementById('countBrowse');
     if (!sec || !list) return;
     sec.style.display = '';
-    // 내게 평가된 정책만(내 지역+전국). 상태는 소속 섹션 그대로 → 개수·딱지가 정확.
-    let items = [
-      ...data.now.map(r => ({ r, status:'now' })),
-      ...data.soon.map(r => ({ r, status:'soon' })),
-      ...data.no.map(r => ({ r, status:'no' })),
-    ];
-    if (filterCat && filterCat !== 'all') {
-      items = items.filter(x => { const p = window.PinHomePolicies.find(y => y.id === x.r.policy_id); return p && p.category === filterCat; });
-    }
-    if (q) items = items.filter(x => policyMatchesQuery(window.PinHomePolicies.find(p => p.id === x.r.policy_id), q));
-    if (cnt) cnt.textContent = items.length;
-    if (!items.length) {
+    const catOk = r => { if (!filterCat || filterCat === 'all') return true; const p = window.PinHomePolicies.find(y => y.id === r.policy_id); return p && p.category === filterCat; };
+    const qOk = r => policyMatchesQuery(window.PinHomePolicies.find(p => p.id === r.policy_id), q);
+    const nowF  = data.now.filter(r => catOk(r) && qOk(r));
+    const soonF = data.soon.filter(r => catOk(r) && qOk(r));
+    // 조건 미달 중 '다른 지역' 정책은 제외 → 내 지역+전국만
+    const noF = data.no.filter(r => r.excluded_by !== 'region' && catOk(r) && qOk(r));
+    const total = nowF.length + soonF.length + noF.length;
+    if (cnt) cnt.textContent = total;
+    if (!total) {
       list.innerHTML = '<div style="padding:40px 20px;text-align:center;color:var(--ink-hint);font-size:13px">검색 결과가 없어요</div>';
       return;
     }
-    list.innerHTML = items.map(x => renderBrowseRow(x.r, x.status)).join('');
-  }
-
-  function renderBrowseRow(result, status){
-    const p = window.PinHomePolicies.find(x => x.id === result.policy_id);
-    if (!p) return '';
-    const cat = CAT_LABEL[p.category] || p.category;
-    const pill = status === 'now' ? '<span class="bp-pill bp-now">받을 수 있음</span>'
-      : status === 'soon' ? '<span class="bp-pill bp-soon">곧 가능</span>'
-      : '<span class="bp-pill bp-no">조건 미달</span>';
-    const ddl = deadlineBadge(p);
-    return '<div class="brow-item"' + (status === 'no' ? ' data-no="1"' : '') + ' onclick="openDetail(\'' + result.policy_id + '\')">'
-      + '<div class="brow-body">'
-      + '<div class="row-cat">' + cat + ' · ' + (p.source_org || '') + '</div>'
-      + '<div class="brow-title">' + p.title + '</div>'
-      + '<div class="brow-badges">' + pill + ddl + '</div>'
-      + '</div>'
-      + '<i class="ti ti-chevron-right brow-arrow"></i>'
-      + '</div>';
+    // 원래 목록과 동일한 풍성한 행 (받을 수 있음/곧 → 상세행, 미달 → 흐린 행)
+    list.innerHTML = nowF.map(renderPolicyRow).join('')
+      + soonF.map(renderPolicyRow).join('')
+      + noF.map(renderNoRow).join('');
   }
 
   // ★ v0.45 — 신청 마감 D-day 배지 (정책 data.application_deadline: 'YYYY-MM-DD')
