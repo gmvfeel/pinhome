@@ -25,3 +25,8 @@ self.addEventListener('notificationclick', function (event) {
     })
   );
 });
+
+/* PWA 설치 조건 충족용 최소 fetch 핸들러 (네트워크 그대로 통과) */
+self.addEventListener('fetch', function (event) {
+  // 별도 캐싱 없이 기본 네트워크 요청을 그대로 사용
+});

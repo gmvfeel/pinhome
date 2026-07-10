@@ -1,0 +1,15 @@
+{
+  "name": "PinHome — 내게 맞는 부동산 정책",
+  "short_name": "PinHome",
+  "description": "정부·지자체 부동산 정책을 내 조건에 맞게 매칭해 드려요.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0A0E1A",
+  "theme_color": "#0A0E1A",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
