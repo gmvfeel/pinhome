@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.60 (비밀번호 찾기)</title>
+<title>PinHome · v0.61 (카카오·구글 간편로그인)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2160,6 +2160,15 @@
   .auth-forgot{text-align:center;margin-top:12px}
   .auth-forgot a,.auth-switch-hint a{color:var(--em-text);font-size:12.5px;font-weight:600;text-decoration:none;cursor:pointer}
   .auth-forgot a:hover,.auth-switch-hint a:hover{text-decoration:underline}
+  .auth-or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:var(--ink-hint);font-size:12px}
+  .auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--line)}
+  .auth-social{display:flex;flex-direction:column;gap:9px}
+  .social-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:1px solid transparent;font-family:inherit}
+  .social-btn .social-ic{font-size:15px;font-weight:800}
+  .social-btn.kakao{background:#FEE500;color:#191600;border-color:#FEE500}
+  .social-btn.google{background:#fff;color:#1f2328;border:1px solid #dadce0}
+  .social-btn.google .social-ic{color:#4285F4;font-family:Arial,sans-serif}
+  .social-btn:hover{filter:brightness(0.97)}
   /* 상단바: 로그인 버튼 / 로그인된 사용자 */
   .nav-login-btn{padding:7px 15px;border:none;border-radius:8px;background:var(--em);color:var(--on-em);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)}
   .nav-user-logged{display:flex;align-items:center;gap:8px}
@@ -2536,7 +2545,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.61</div>
   </section>
 
   <!-- ============================================ -->
@@ -2645,7 +2654,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.61</div>
   </section>
 
   <!-- ============================================ -->
@@ -2694,7 +2703,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.61</div>
   </section>
 
   <!-- ============================================ -->
@@ -2723,7 +2732,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.61</div>
   </section>
 
 </div>
@@ -7303,6 +7312,11 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     </div>
     <button class="auth-submit" id="authSubmit" onclick="submitAuth()">로그인</button>
     <div class="auth-forgot" id="authForgot"><a href="javascript:void(0)" onclick="switchAuthTab('reset')">비밀번호를 잊으셨나요?</a></div>
+    <div class="auth-or" id="authOr"><span>또는 간편하게</span></div>
+    <div class="auth-social" id="authSocial">
+      <button class="social-btn kakao" onclick="socialLogin('kakao')"><span class="social-ic">💬</span>카카오로 시작하기</button>
+      <button class="social-btn google" onclick="socialLogin('google')"><span class="social-ic">G</span>구글로 시작하기</button>
+    </div>
     <div class="auth-msg" id="authMsg"></div>
     <div class="auth-switch-hint" id="authHint">처음이신가요? 위에서 '회원가입'을 눌러주세요.</div>
   </div>
@@ -7417,6 +7431,11 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     // '비밀번호를 잊으셨나요?' 링크는 로그인 모드에서만
     const forgot = document.getElementById('authForgot');
     if (forgot) forgot.style.display = isLogin ? '' : 'none';
+    // 간편로그인(카카오/구글)은 재설정 모드에선 숨김
+    const social = document.getElementById('authSocial');
+    const orDiv = document.getElementById('authOr');
+    if (social) social.style.display = isReset ? 'none' : '';
+    if (orDiv) orDiv.style.display = isReset ? 'none' : '';
     // 안내 문구
     const sub = document.getElementById('authSub');
     if (sub) sub.textContent = isReset ? '가입하신 이메일로 비밀번호 재설정 링크를 보내드려요.' : '즐겨찾기와 내 정보를 저장하려면 로그인하세요.';
@@ -7487,6 +7506,23 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
 
   window.pinhomeLogout = async function() {
     if (pinhomeSb) await pinhomeSb.auth.signOut();
+  };
+
+  // ★ v0.61 — 카카오/구글 간편로그인
+  window.socialLogin = async function(provider) {
+    const msg = document.getElementById('authMsg');
+    if (msg) { msg.className = 'auth-msg'; }
+    if (!pinhomeSb) { if (msg) { msg.classList.add('err'); msg.textContent = '연결 준비 중이에요. 잠시 후 다시 시도해주세요.'; } return; }
+    try {
+      const redirectTo = location.origin + location.pathname;
+      const opts = { redirectTo };
+      if (provider === 'kakao') opts.scopes = 'account_email';   // 이메일 동의 요청(알림용)
+      const { error } = await pinhomeSb.auth.signInWithOAuth({ provider, options: opts });
+      if (error) { if (msg) { msg.classList.add('err'); msg.textContent = translateAuthError(error.message); } }
+      // 성공 시 페이지가 provider로 이동했다가 로그인 후 앱으로 되돌아와요 (세션은 자동 처리).
+    } catch (e) {
+      if (msg) { msg.classList.add('err'); msg.textContent = '문제가 생겼어요. 잠시 후 다시 시도해주세요.'; }
+    }
   };
 
   // 로그인한 회원의 비밀번호 변경 (세션이 본인 확인 대신 — 이메일 발송 불필요)
