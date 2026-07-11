@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.59 (신청 서류 체크리스트)</title>
+<title>PinHome · v0.60 (비밀번호 찾기)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2157,6 +2157,9 @@
   .auth-msg.ok{color:var(--em-text)}
   .auth-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--ink-mute);font-size:22px;cursor:pointer;line-height:1}
   .auth-switch-hint{font-size:12px;color:var(--ink-hint);text-align:center;margin-top:14px}
+  .auth-forgot{text-align:center;margin-top:12px}
+  .auth-forgot a,.auth-switch-hint a{color:var(--em-text);font-size:12.5px;font-weight:600;text-decoration:none;cursor:pointer}
+  .auth-forgot a:hover,.auth-switch-hint a:hover{text-decoration:underline}
   /* 상단바: 로그인 버튼 / 로그인된 사용자 */
   .nav-login-btn{padding:7px 15px;border:none;border-radius:8px;background:var(--em);color:var(--on-em);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)}
   .nav-user-logged{display:flex;align-items:center;gap:8px}
@@ -2533,7 +2536,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
   </section>
 
   <!-- ============================================ -->
@@ -2642,7 +2645,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
   </section>
 
   <!-- ============================================ -->
@@ -2691,7 +2694,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
   </section>
 
   <!-- ============================================ -->
@@ -2720,7 +2723,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.59</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.60</div>
   </section>
 
 </div>
@@ -7294,11 +7297,12 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       <label for="authEmail">이메일</label>
       <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com" />
     </div>
-    <div class="auth-field">
+    <div class="auth-field" id="authPwField">
       <label for="authPassword">비밀번호</label>
       <input type="password" id="authPassword" autocomplete="current-password" placeholder="6자 이상" onkeydown="if(event.key==='Enter')submitAuth()" />
     </div>
     <button class="auth-submit" id="authSubmit" onclick="submitAuth()">로그인</button>
+    <div class="auth-forgot" id="authForgot"><a href="javascript:void(0)" onclick="switchAuthTab('reset')">비밀번호를 잊으셨나요?</a></div>
     <div class="auth-msg" id="authMsg"></div>
     <div class="auth-switch-hint" id="authHint">처음이신가요? 위에서 '회원가입'을 눌러주세요.</div>
   </div>
@@ -7343,6 +7347,12 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     pinhomeSb.auth.onAuthStateChange((_event, session) => {
       pinhomeUser = session ? session.user : null;
       reflectAuthState();
+      // ★ v0.60 — 비밀번호 재설정 링크로 돌아온 경우: 새 비밀번호 설정 창 띄우기
+      if (_event === 'PASSWORD_RECOVERY') {
+        if (typeof window.closeAuthModal === 'function') window.closeAuthModal();
+        if (typeof window.openPasswordModal === 'function') window.openPasswordModal();
+        if (window.showToast) window.showToast('새 비밀번호를 설정해주세요');
+      }
     });
   }
 
@@ -7385,6 +7395,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
 
   window.openAuthModal = function() {
     document.getElementById('authMsg').textContent = '';
+    if (typeof switchAuthTab === 'function') switchAuthTab('login');
     document.getElementById('authOverlay').classList.add('on');
   };
   window.closeAuthModal = function() {
@@ -7394,14 +7405,28 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
   window.switchAuthTab = function(mode) {
     authMode = mode;
     const isLogin = mode === 'login';
+    const isSignup = mode === 'signup';
+    const isReset = mode === 'reset';
     document.getElementById('authTabLogin').classList.toggle('on', isLogin);
-    document.getElementById('authTabSignup').classList.toggle('on', !isLogin);
-    document.getElementById('authTitle').textContent = isLogin ? '로그인' : '회원가입';
-    document.getElementById('authSubmit').textContent = isLogin ? '로그인' : '회원가입';
-    document.getElementById('authHint').textContent = isLogin
-      ? "처음이신가요? 위에서 '회원가입'을 눌러주세요."
-      : "이미 계정이 있으면 '로그인'을 눌러주세요.";
+    document.getElementById('authTabSignup').classList.toggle('on', isSignup);
+    document.getElementById('authTitle').textContent = isReset ? '비밀번호 찾기' : (isLogin ? '로그인' : '회원가입');
+    document.getElementById('authSubmit').textContent = isReset ? '재설정 메일 보내기' : (isLogin ? '로그인' : '회원가입');
+    // 비밀번호 입력칸: 재설정 모드에선 숨김 (이메일만 받음)
+    const pwField = document.getElementById('authPwField');
+    if (pwField) pwField.style.display = isReset ? 'none' : '';
+    // '비밀번호를 잊으셨나요?' 링크는 로그인 모드에서만
+    const forgot = document.getElementById('authForgot');
+    if (forgot) forgot.style.display = isLogin ? '' : 'none';
+    // 안내 문구
+    const sub = document.getElementById('authSub');
+    if (sub) sub.textContent = isReset ? '가입하신 이메일로 비밀번호 재설정 링크를 보내드려요.' : '즐겨찾기와 내 정보를 저장하려면 로그인하세요.';
+    const hint = document.getElementById('authHint');
+    if (hint) {
+      if (isReset) hint.innerHTML = "<a href=\"javascript:void(0)\" onclick=\"switchAuthTab('login')\">← 로그인으로 돌아가기</a>";
+      else hint.textContent = isLogin ? "처음이신가요? 위에서 '회원가입'을 눌러주세요." : "이미 계정이 있으면 '로그인'을 눌러주세요.";
+    }
     document.getElementById('authMsg').textContent = '';
+    document.getElementById('authMsg').className = 'auth-msg';
   };
 
   window.submitAuth = async function() {
@@ -7411,6 +7436,25 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     const btn = document.getElementById('authSubmit');
 
     msg.className = 'auth-msg';
+
+    // ★ v0.60 — 비밀번호 찾기: 재설정 메일 발송 (이메일만 필요)
+    if (authMode === 'reset') {
+      if (!email) { msg.classList.add('err'); msg.textContent = '이메일을 입력해주세요.'; return; }
+      if (!pinhomeSb) { msg.classList.add('err'); msg.textContent = '연결 준비 중이에요. 잠시 후 다시 시도해주세요.'; return; }
+      btn.disabled = true; btn.textContent = '보내는 중...';
+      try {
+        const redirectTo = location.origin + location.pathname;
+        const { error } = await pinhomeSb.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) { msg.classList.add('err'); msg.textContent = translateAuthError(error.message); }
+        else { msg.classList.add('ok'); msg.textContent = '재설정 링크를 이메일로 보냈어요. 메일함(스팸함도 함께) 을 확인해주세요.'; }
+      } catch (e) {
+        msg.classList.add('err'); msg.textContent = '문제가 생겼어요. 잠시 후 다시 시도해주세요.';
+      } finally {
+        btn.disabled = false; btn.textContent = '재설정 메일 보내기';
+      }
+      return;
+    }
+
     if (!email || !pw) { msg.classList.add('err'); msg.textContent = '이메일과 비밀번호를 입력해주세요.'; return; }
     if (pw.length < 6) { msg.classList.add('err'); msg.textContent = '비밀번호는 6자 이상이어야 해요.'; return; }
     if (!pinhomeSb) { msg.classList.add('err'); msg.textContent = '연결 준비 중이에요. 잠시 후 다시 시도해주세요.'; return; }
