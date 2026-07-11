@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.69 (프로필 저장 시 백엔드 기록 보존)</title>
+<title>PinHome · v0.70 (취득세·전월세 계산기)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2608,7 +2608,7 @@
       <i class="ti ti-chevron-right guide-entry-arr"></i>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.70</div>
   </section>  <!-- ============================================ -->
   <section class="screen" id="screen-check">
     <div class="check-card">
@@ -2713,7 +2713,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.70</div>
   </section>
 
   <!-- ============================================ -->
@@ -2762,7 +2762,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.70</div>
   </section>
 
   <!-- ============================================ -->
@@ -2791,7 +2791,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.70</div>
   </section>
 
   <!-- ★ v0.66 — 부동산 계산기 화면 -->
@@ -2801,6 +2801,8 @@
       <div class="calc-tabs">
         <button class="calc-tab on" data-calc="loan" onclick="switchCalc('loan')">월 상환액</button>
         <button class="calc-tab" data-calc="score" onclick="switchCalc('score')">청약 가점</button>
+        <button class="calc-tab" data-calc="tax" onclick="switchCalc('tax')">취득세</button>
+        <button class="calc-tab" data-calc="conv" onclick="switchCalc('conv')">전월세 전환</button>
       </div>
 
       <div class="calc-panel" id="calcLoan">
@@ -2823,9 +2825,41 @@
         <div class="calc-result" id="scoreResult"></div>
       </div>
 
+      <div class="calc-panel" id="calcTax" style="display:none">
+        <div class="calc-field"><label for="taxPrice">취득가액 (만원)</label><input type="number" id="taxPrice" value="50000" inputmode="numeric" oninput="calcTax()"></div>
+        <div class="calc-field"><label for="taxArea">전용면적</label>
+          <select id="taxArea" onchange="calcTax()">
+            <option value="small">85㎡ 이하</option>
+            <option value="large">85㎡ 초과</option>
+          </select>
+        </div>
+        <div class="calc-result" id="taxResult"></div>
+        <div class="calc-note" style="margin-top:10px">1주택 유상취득(집을 사는 경우) 기준이에요. 다주택·조정대상지역·생애최초 감면·증여·상속 등은 세율이 달라지니 공식 계산기를 확인하세요.</div>
+      </div>
+
+      <div class="calc-panel" id="calcConv" style="display:none">
+        <div class="calc-field"><label for="convDir">변환 방향</label>
+          <select id="convDir" onchange="onConvDir()">
+            <option value="jw">전세 → 월세</option>
+            <option value="wj">월세 → 전세</option>
+          </select>
+        </div>
+        <div id="convJW">
+          <div class="calc-field"><label for="cvDeposit">현재 전세 보증금 (만원)</label><input type="number" id="cvDeposit" value="30000" inputmode="numeric" oninput="calcConv()"></div>
+          <div class="calc-field"><label for="cvKeep">월세 전환 후 남길 보증금 (만원)</label><input type="number" id="cvKeep" value="10000" inputmode="numeric" oninput="calcConv()"></div>
+        </div>
+        <div id="convWJ" style="display:none">
+          <div class="calc-field"><label for="cvDeposit2">보증금 (만원)</label><input type="number" id="cvDeposit2" value="10000" inputmode="numeric" oninput="calcConv()"></div>
+          <div class="calc-field"><label for="cvRent">월세 (만원)</label><input type="number" id="cvRent" value="80" inputmode="numeric" oninput="calcConv()"></div>
+        </div>
+        <div class="calc-field"><label for="cvRate">전월세 전환율 (%)</label><input type="number" id="cvRate" value="5.5" step="0.1" inputmode="decimal" oninput="calcConv()"></div>
+        <div class="calc-result" id="convResult"></div>
+        <div class="calc-note" style="margin-top:10px">전환율은 지역·시기에 따라 달라져요. 실제 계약 조건은 임대인과 협의로 정해집니다.</div>
+      </div>
+
       <div class="calc-note">참고용 추정치예요. 실제 상환액·가점은 금융기관과 청약 기준에 따라 달라질 수 있어요. 무주택 기간은 보통 만 30세(또는 혼인)부터 산정돼요.</div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.70</div>
   </section>
 
   <!-- ★ v0.67 — 도움말: 용어 사전 & FAQ -->
@@ -2863,7 +2897,7 @@
 
       <div class="calc-note">일반적인 설명이에요. 구체적인 한도·비율·기준은 정책과 시기에 따라 달라질 수 있으니, 신청 전 공식 안내를 확인하세요.</div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.70</div>
   </section>
 
 </div>
@@ -2884,11 +2918,13 @@
 <script>
   // ★ v0.66 — 부동산 계산기
   window.switchCalc = function(which){
-    document.querySelectorAll('.calc-tab').forEach(t => t.classList.toggle('on', t.dataset.calc === which));
-    var l = document.getElementById('calcLoan'), s = document.getElementById('calcScore');
-    if (l) l.style.display = which === 'loan' ? '' : 'none';
-    if (s) s.style.display = which === 'score' ? '' : 'none';
-    if (which === 'loan') window.calcLoan(); else window.calcScore();
+    document.querySelectorAll('.calc-tab[data-calc]').forEach(t => t.classList.toggle('on', t.dataset.calc === which));
+    var map = { loan: 'calcLoan', score: 'calcScore', tax: 'calcTax', conv: 'calcConv' };
+    Object.keys(map).forEach(k => { var el = document.getElementById(map[k]); if (el) el.style.display = (k === which) ? '' : 'none'; });
+    if (which === 'loan') window.calcLoan();
+    else if (which === 'score') window.calcScore();
+    else if (which === 'tax') window.calcTax();
+    else if (which === 'conv') window.calcConv();
   };
 
   window.calcLoan = function(){
@@ -2931,9 +2967,66 @@
       + '<div class="calc-rrow"><span class="k">청약통장 기간 (최대 17점)</span><span class="v">' + bank + '점</span></div>';
   };
 
+  // ★ v0.70 — 취득세 계산기 (1주택 유상취득 기준)
+  window.calcTax = function(){
+    var el = document.getElementById('taxResult'); if(!el) return;
+    var priceMan = parseFloat((document.getElementById('taxPrice')||{}).value) || 0;
+    var area = (document.getElementById('taxArea')||{}).value || 'small';
+    var P = priceMan * 10000;
+    if (P <= 0) { el.innerHTML = '<div class="calc-rrow"><span class="k">취득가액을 입력해주세요</span></div>'; return; }
+    var eok = P / 100000000, rate;
+    if (eok <= 6) rate = 1;
+    else if (eok <= 9) rate = (eok * 2 / 3) - 3;
+    else rate = 3;
+    rate = Math.round(rate * 100) / 100;
+    var acq = P * rate / 100;
+    var edu = P * (rate * 0.1) / 100;
+    var rural = area === 'large' ? P * 0.2 / 100 : 0;
+    var total = acq + edu + rural;
+    var won = function(v){ return Math.round(v).toLocaleString('ko-KR') + '원'; };
+    el.innerHTML = '<div class="calc-rrow main"><span class="k">총 세금</span><span class="v">' + won(total) + '</span></div>'
+      + '<div class="calc-rrow"><span class="k">취득세 (' + rate + '%)</span><span class="v">' + won(acq) + '</span></div>'
+      + '<div class="calc-rrow"><span class="k">지방교육세</span><span class="v">' + won(edu) + '</span></div>'
+      + '<div class="calc-rrow"><span class="k">농어촌특별세' + (rural ? '' : ' (비과세)') + '</span><span class="v">' + won(rural) + '</span></div>';
+  };
+
+  // ★ v0.70 — 전월세 전환 계산기
+  window.onConvDir = function(){
+    var dir = (document.getElementById('convDir')||{}).value || 'jw';
+    var jw = document.getElementById('convJW'), wj = document.getElementById('convWJ');
+    if (jw) jw.style.display = dir === 'jw' ? '' : 'none';
+    if (wj) wj.style.display = dir === 'wj' ? '' : 'none';
+    window.calcConv();
+  };
+  window.calcConv = function(){
+    var el = document.getElementById('convResult'); if(!el) return;
+    var dir = (document.getElementById('convDir')||{}).value || 'jw';
+    var rate = parseFloat((document.getElementById('cvRate')||{}).value) || 0;
+    var won = function(v){ return Math.round(v).toLocaleString('ko-KR') + '원'; };
+    var manwon = function(v){ return Math.round(v).toLocaleString('ko-KR') + '만원'; };
+    if (rate <= 0) { el.innerHTML = '<div class="calc-rrow"><span class="k">전환율을 입력해주세요</span></div>'; return; }
+    if (dir === 'jw') {
+      var dep = parseFloat((document.getElementById('cvDeposit')||{}).value) || 0;
+      var keep = parseFloat((document.getElementById('cvKeep')||{}).value) || 0;
+      if (keep > dep) { el.innerHTML = '<div class="calc-rrow"><span class="k">남길 보증금이 전세보증금보다 클 수 없어요</span></div>'; return; }
+      var convertMan = dep - keep;
+      var monthlyMan = convertMan * (rate / 100) / 12;
+      el.innerHTML = '<div class="calc-rrow main"><span class="k">예상 월세</span><span class="v">' + won(monthlyMan * 10000) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">전환 후 보증금</span><span class="v">' + manwon(keep) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">월세로 전환한 금액</span><span class="v">' + manwon(convertMan) + '</span></div>';
+    } else {
+      var dep2 = parseFloat((document.getElementById('cvDeposit2')||{}).value) || 0;
+      var rentMan = parseFloat((document.getElementById('cvRent')||{}).value) || 0;
+      var addMan = (rentMan * 12) / (rate / 100);
+      var jeonseMan = dep2 + addMan;
+      el.innerHTML = '<div class="calc-rrow main"><span class="k">전세 환산 보증금</span><span class="v">' + won(jeonseMan * 10000) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">기존 보증금</span><span class="v">' + manwon(dep2) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">월세의 보증금 환산분</span><span class="v">' + manwon(addMan) + '</span></div>';
+    }
+  };
+
   // ★ v0.67 — 도움말(용어/FAQ)
-  window.switchGuide = function(which){
-    document.querySelectorAll('.calc-tab[data-guide]').forEach(t => t.classList.toggle('on', t.dataset.guide === which));
+  window.switchGuide = function(which){    document.querySelectorAll('.calc-tab[data-guide]').forEach(t => t.classList.toggle('on', t.dataset.guide === which));
     var t = document.getElementById('guideTerms'), f = document.getElementById('guideFaq');
     if (t) t.style.display = which === 'terms' ? '' : 'none';
     if (f) f.style.display = which === 'faq' ? '' : 'none';
@@ -2991,6 +3084,8 @@
     if (name === 'calc') {
       if (typeof window.calcLoan === 'function') window.calcLoan();
       if (typeof window.calcScore === 'function') window.calcScore();
+      if (typeof window.calcTax === 'function') window.calcTax();
+      if (typeof window.calcConv === 'function') window.calcConv();
     }
   }
   // 뒤로 가기: 직전 화면으로
