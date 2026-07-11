@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.66 (부동산 계산기)</title>
+<title>PinHome · v0.67 (용어·FAQ 도움말)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1504,6 +1504,20 @@
   .calc-score-num{font-size:42px;font-weight:800;color:var(--em-text);}
   .calc-score-max{font-size:16px;color:var(--ink-hint);}
   .calc-note{font-size:12px;color:var(--ink-hint);margin-top:14px;line-height:1.6;}
+  .guide-wrap{max-width:620px;margin:0 auto;padding:8px 0 40px;}
+  .guide-entry{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--em-line);border-radius:14px;padding:15px 16px;margin-top:18px;cursor:pointer;}
+  .guide-entry:hover{background:var(--surface-2);}
+  .guide-entry-ic{width:38px;height:38px;border-radius:10px;background:var(--em-soft);color:var(--em-text);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .guide-entry-body{flex:1;min-width:0;}
+  .guide-entry-t{font-size:14px;font-weight:800;color:var(--ink);}
+  .guide-entry-d{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .guide-entry-arr{color:var(--ink-hint);font-size:18px;}
+  .acc{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden;background:var(--surface);}
+  .acc-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;background:none;border:none;font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;line-height:1.4;}
+  .acc-q i{color:var(--ink-hint);font-size:17px;flex-shrink:0;transition:transform .2s;}
+  .acc.open .acc-q i{transform:rotate(180deg);}
+  .acc-a{display:none;padding:0 16px 16px;font-size:13.5px;color:var(--ink-soft);line-height:1.7;}
+  .acc.open .acc-a{display:block;}
   .detail-warn {
     background: var(--warn-soft);
     border-left: 2px solid var(--warn);
@@ -2343,6 +2357,7 @@
       <button class="nav-item" data-screen="check">간편 확인</button>
       <button class="nav-item" data-screen="result">결과</button>
       <button class="nav-item" data-screen="calc">계산기</button>
+      <button class="nav-item" data-screen="guide">도움말</button>
       <button class="nav-item nav-hidden" data-screen="mypage">마이</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -2583,12 +2598,18 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
-  </section>
+    <!-- ★ v0.67: 용어·FAQ 진입 -->
+    <div class="guide-entry" onclick="go('guide')">
+      <div class="guide-entry-ic"><i class="ti ti-help-circle"></i></div>
+      <div class="guide-entry-body">
+        <div class="guide-entry-t">부동산 용어 &amp; 자주 묻는 질문</div>
+        <div class="guide-entry-d">LTV·DSR·무주택 기준 등 쉽게 풀어드려요</div>
+      </div>
+      <i class="ti ti-chevron-right guide-entry-arr"></i>
+    </div>
 
-  <!-- ============================================ -->
-  <!-- 화면 2: 간편 확인 -->
-  <!-- ============================================ -->
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+  </section>  <!-- ============================================ -->
   <section class="screen" id="screen-check">
     <div class="check-card">
       <div class="check-eyebrow">조건 정밀화</div>
@@ -2692,7 +2713,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
   </section>
 
   <!-- ============================================ -->
@@ -2741,7 +2762,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
   </section>
 
   <!-- ============================================ -->
@@ -2770,7 +2791,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
   </section>
 
   <!-- ★ v0.66 — 부동산 계산기 화면 -->
@@ -2804,7 +2825,45 @@
 
       <div class="calc-note">참고용 추정치예요. 실제 상환액·가점은 금융기관과 청약 기준에 따라 달라질 수 있어요. 무주택 기간은 보통 만 30세(또는 혼인)부터 산정돼요.</div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+  </section>
+
+  <!-- ★ v0.67 — 도움말: 용어 사전 & FAQ -->
+  <section class="screen" id="screen-guide">
+    <div class="guide-wrap">
+      <h1 class="calc-title">부동산 용어 &amp; 자주 묻는 질문</h1>
+      <div class="calc-tabs">
+        <button class="calc-tab on" data-guide="terms" onclick="switchGuide('terms')">용어 사전</button>
+        <button class="calc-tab" data-guide="faq" onclick="switchGuide('faq')">자주 묻는 질문</button>
+      </div>
+
+      <div id="guideTerms">
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">LTV (담보인정비율)<i class="ti ti-chevron-down"></i></button><div class="acc-a">집을 담보로 돈을 빌릴 때, 집값 대비 얼마까지 빌려주는지를 나타내는 비율이에요. 예를 들어 집값이 4억이고 LTV가 70%라면 최대 2억 8천만원까지 빌릴 수 있어요. 지역·주택 종류·정책에 따라 한도가 달라져요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">DSR (총부채원리금상환비율)<i class="ti ti-chevron-down"></i></button><div class="acc-a">내 연 소득 대비, 모든 대출의 1년치 원금+이자 상환액이 차지하는 비율이에요. 이 비율이 높으면 "갚을 여력이 부족하다"고 보아 대출 한도가 줄어들어요. 소득이 많고 기존 빚이 적을수록 유리해요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">DTI (총부채상환비율)<i class="ti ti-chevron-down"></i></button><div class="acc-a">소득 대비 상환 부담을 보는 비율이라는 점은 DSR과 비슷하지만, 주택담보대출은 원금+이자를, 다른 대출은 이자만 계산에 넣는다는 점이 달라요. DSR이 더 엄격한 기준이에요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">무주택 세대구성원<i class="ti ti-chevron-down"></i></button><div class="acc-a">주민등록등본에 함께 올라 있는 세대원 전원이 집을 한 채도 갖고 있지 않은 상태를 말해요. 배우자나 부모님이 집을 갖고 있으면 무주택으로 인정되지 않는 경우가 많으니 등본 기준으로 확인하세요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">무주택 기간<i class="ti ti-chevron-down"></i></button><div class="acc-a">집을 갖지 않고 지낸 기간이에요. 청약 가점에서 중요한 항목이며, 보통 만 30세부터(결혼한 경우 혼인신고일부터) 계산해요. 기간이 길수록 가점이 높아져요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">주택청약종합저축 (청약통장)<i class="ti ti-chevron-down"></i></button><div class="acc-a">아파트 청약에 넣기 위해 미리 가입해두는 저축 통장이에요. 가입 기간이 길고 납입 횟수가 많을수록 청약에 유리해요. 가입은 빠를수록 좋아요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">청약 가점제<i class="ti ti-chevron-down"></i></button><div class="acc-a">청약 경쟁이 있을 때 점수 순으로 당첨자를 뽑는 방식이에요. 무주택 기간(최대 32점), 부양가족 수(최대 35점), 청약통장 가입 기간(최대 17점)을 합쳐 84점 만점으로 계산해요. (앱의 "계산기 → 청약 가점"에서 계산해볼 수 있어요.)</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">생애최초 주택구입<i class="ti ti-chevron-down"></i></button><div class="acc-a">태어나서 한 번도 집을 사본 적이 없는 사람이 처음으로 집을 사는 경우예요. 여러 정책에서 우대 혜택(대출 한도·세금 감면 등)을 줘요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">중위소득 / 소득분위<i class="ti ti-chevron-down"></i></button><div class="acc-a">중위소득은 전체 가구를 소득 순으로 줄 세웠을 때 정확히 가운데 있는 가구의 소득이에요. 많은 정책이 "중위소득 몇 % 이하" 식으로 자격을 정해요. 소득분위는 소득 수준을 10구간 등으로 나눈 것이에요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">전세보증금 반환보증<i class="ti ti-chevron-down"></i></button><div class="acc-a">전세 계약이 끝났을 때 집주인이 보증금을 돌려주지 못하는 상황에 대비해, 보증기관이 대신 보증금을 돌려주도록 가입하는 보험 성격의 상품이에요. 전세사기·깡통전세 피해를 줄여줘요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">원리금균등 vs 원금균등<i class="ti ti-chevron-down"></i></button><div class="acc-a">원리금균등은 매달 갚는 금액이 똑같아서 계획을 세우기 쉬워요. 원금균등은 초반에 많이 갚고 갈수록 줄어들어, 총 이자는 더 적지만 초반 부담이 커요. (앱의 "계산기 → 월 상환액"에서 비교해볼 수 있어요.)</div></div>
+      </div>
+
+      <div id="guideFaq" style="display:none">
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">무주택 기간은 언제부터 계산되나요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">보통 만 30세가 되는 날부터 계산해요. 다만 30세 이전에 결혼했다면 혼인신고일부터 계산하기도 해요. 세대원 중 누군가 집을 갖게 되면 그 기간은 무주택 기간에서 빠져요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">부부 합산 소득이 기준을 넘으면 무조건 안 되나요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">대부분 소득 상한을 두지만, 자녀 수·생애최초 여부 등에 따라 기준이 완화되는 정책도 많아요. 앱에서 "곧 가능"으로 뜨는 정책은 상세 화면의 "자격까지 거의 다 왔어요"에서 얼마나 차이 나는지 확인할 수 있어요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">청약통장은 어떤 걸 만들면 되나요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">지금은 대부분 "주택청약종합저축" 하나로 통합돼 있어요. 은행에서 누구나 가입할 수 있고, 매달 일정 금액을 넣으면 돼요. 가입은 빠를수록, 오래 유지할수록 유리하니 미리 만들어두는 게 좋아요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">생애최초는 정확히 어떤 조건인가요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">본인과 배우자 모두 과거에 집을 소유한 적이 한 번도 없어야 해요. 상속으로 잠깐 가졌다가 처분한 경우 등 예외 규정이 있을 수 있으니, 해당 정책의 공식 안내를 꼭 확인하세요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">소득이 적거나 없으면 대출이 안 되나요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">소득이 너무 낮으면 상환 능력 심사에서 한도가 줄 수 있지만, 청년·신혼부부 대상 정책 대출은 오히려 소득이 낮을수록 유리한 경우도 많아요. 자격 소득 "상한"이 있는 정책이 많다는 점을 기억하세요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">여러 정책을 동시에 받을 수 있나요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">중복이 되는 것도, 안 되는 것도 있어요. 특히 정부 정책 대출끼리는 중복이 제한되는 경우가 많아요. 관심 있는 정책들을 즐겨찾기해두고, 각 공식 사이트에서 중복 가능 여부를 확인하는 걸 추천해요.</div></div>
+        <div class="acc"><button class="acc-q" onclick="toggleAcc(this)">앱의 매칭 점수는 신청 자격을 보장하나요?<i class="ti ti-chevron-down"></i></button><div class="acc-a">아니요. 매칭 점수와 결과는 공개된 자격 요건을 바탕으로 한 추정이에요. 최종 자격은 발급기관 심사로 정해지니, 신청 전에는 반드시 공식 사이트에서 확인하세요.</div></div>
+      </div>
+
+      <div class="calc-note">일반적인 설명이에요. 구체적인 한도·비율·기준은 정책과 시기에 따라 달라질 수 있으니, 신청 전 공식 안내를 확인하세요.</div>
+    </div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
   </section>
 
 </div>
@@ -2871,6 +2930,18 @@
       + '<div class="calc-rrow"><span class="k">부양가족 수 (최대 35점)</span><span class="v">' + deps + '점</span></div>'
       + '<div class="calc-rrow"><span class="k">청약통장 기간 (최대 17점)</span><span class="v">' + bank + '점</span></div>';
   };
+
+  // ★ v0.67 — 도움말(용어/FAQ)
+  window.switchGuide = function(which){
+    document.querySelectorAll('.calc-tab[data-guide]').forEach(t => t.classList.toggle('on', t.dataset.guide === which));
+    var t = document.getElementById('guideTerms'), f = document.getElementById('guideFaq');
+    if (t) t.style.display = which === 'terms' ? '' : 'none';
+    if (f) f.style.display = which === 'faq' ? '' : 'none';
+  };
+  window.toggleAcc = function(btn){
+    var item = btn.closest('.acc'); if(!item) return;
+    item.classList.toggle('open');
+  };
 </script>
 <script>
   (function(){
@@ -2883,7 +2954,7 @@
 </script>
 
 <script>
-  const screens = ['dash', 'check', 'result', 'detail', 'mypage', 'compare', 'calc'];
+  const screens = ['dash', 'check', 'result', 'detail', 'mypage', 'compare', 'calc', 'guide'];
   let navStack = [];
   let currentScreen = 'dash';
   function go(name, isBack) {
