@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.67 (용어·FAQ 도움말)</title>
+<title>PinHome · v0.69 (프로필 저장 시 백엔드 기록 보존)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2608,7 +2608,7 @@
       <i class="ti ti-chevron-right guide-entry-arr"></i>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
   </section>  <!-- ============================================ -->
   <section class="screen" id="screen-check">
     <div class="check-card">
@@ -2713,7 +2713,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
   </section>
 
   <!-- ============================================ -->
@@ -2762,7 +2762,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
   </section>
 
   <!-- ============================================ -->
@@ -2791,7 +2791,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
   </section>
 
   <!-- ★ v0.66 — 부동산 계산기 화면 -->
@@ -2825,7 +2825,7 @@
 
       <div class="calc-note">참고용 추정치예요. 실제 상환액·가점은 금융기관과 청약 기준에 따라 달라질 수 있어요. 무주택 기간은 보통 만 30세(또는 혼인)부터 산정돼요.</div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
   </section>
 
   <!-- ★ v0.67 — 도움말: 용어 사전 & FAQ -->
@@ -2863,7 +2863,7 @@
 
       <div class="calc-note">일반적인 설명이에요. 구체적인 한도·비율·기준은 정책과 시기에 따라 달라질 수 있으니, 신청 전 공식 안내를 확인하세요.</div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.67</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.69</div>
   </section>
 
 </div>
@@ -6206,6 +6206,12 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       return;
     }
     try {
+      // 기존 extra 를 먼저 읽어, 백엔드가 넣은 값(notified_new, fav_fp 등)을 보존
+      let prevExtra = {};
+      try {
+        const { data: prevRow } = await sb.from('pinhome_profiles').select('extra').eq('user_id', user.id).maybeSingle();
+        if (prevRow && prevRow.extra && typeof prevRow.extra === 'object') prevExtra = prevRow.extra;
+      } catch (e) {}
       const row = {
         user_id: user.id,
         age_range: up.age_range || null,
@@ -6217,16 +6223,17 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
         housing_status: up.housing_status || null,
         homeless_years_range: up.homeless_years || null,
         income_range: up.income || null,
-        extra: {
+        extra: Object.assign({}, prevExtra, {
           pregnant: up.pregnant || null,
           first_buyer: up.first_buyer || null,
           elder_parent: up.elder_parent || null,
           residence_years: up.residence_years || null,
           email_optin: !!up.email_optin,
           push_optin: !!up.push_optin,
-          push_sub: up.push_sub || null,
+          push_subs: Array.isArray(up.push_subs) ? up.push_subs : [],
+          push_sub: null,
           reminders: up.reminders || {},
-        },
+        }),
         onboarded_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -6269,7 +6276,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       up.residence_years = ex.residence_years || null;
       up.email_optin = !!ex.email_optin;
       up.push_optin = !!ex.push_optin;
-      up.push_sub = ex.push_sub || null;
+      up.push_subs = Array.isArray(ex.push_subs) ? ex.push_subs : (ex.push_sub ? [ex.push_sub] : []);
+      up.push_sub = null;
       up.reminders = ex.reminders || {};
       return true;
     } catch (e) { console.error(e); return false; }
@@ -7084,11 +7092,16 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       let sub = await reg.pushManager.getSubscription();
       if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC_KEY) });
       if (window.userProfile) {
+        // 다른 기기 구독을 지우지 않도록 서버 최신 목록을 먼저 반영
+        if (typeof window.loadProfileFromServer === 'function') { try { await window.loadProfileFromServer(); } catch (e) {} }
+        const json = sub.toJSON();
+        const list = Array.isArray(window.userProfile.push_subs) ? window.userProfile.push_subs.slice() : [];
+        if (!list.some(s => s && s.endpoint === json.endpoint)) list.push(json);   // 이 기기만 추가(중복 방지)
+        window.userProfile.push_subs = list;
         window.userProfile.push_optin = true;
-        window.userProfile.push_sub = sub.toJSON();
-        if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+        if (typeof window.saveProfileToServer === 'function') await window.saveProfileToServer();
       }
-      if (typeof showToast === 'function') showToast('브라우저 푸시를 켰어요');
+      if (typeof showToast === 'function') showToast('이 기기에서 푸시를 켰어요');
       return true;
     } catch (e) {
       if (typeof showToast === 'function') showToast('푸시 설정 중 문제가 생겼어요: ' + (e.message || e));
@@ -7096,16 +7109,24 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     }
   }
   async function disablePush() {
+    let myEndpoint = null;
     try {
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) { const sub = await reg.pushManager.getSubscription(); if (sub) await sub.unsubscribe(); }
+        if (reg) { const sub = await reg.pushManager.getSubscription(); if (sub) { myEndpoint = sub.endpoint; await sub.unsubscribe(); } }
       }
     } catch (e) {}
     if (window.userProfile) {
-      window.userProfile.push_optin = false;
-      window.userProfile.push_sub = null;
-      if (typeof window.saveProfileToServer === 'function') window.saveProfileToServer();
+      // 서버 최신 목록 반영 후 이 기기만 제거
+      if (typeof window.loadProfileFromServer === 'function') { try { await window.loadProfileFromServer(); } catch (e) {} }
+      let list = Array.isArray(window.userProfile.push_subs) ? window.userProfile.push_subs.slice() : [];
+      if (myEndpoint) list = list.filter(s => s && s.endpoint !== myEndpoint);
+      else list = [];   // 이 기기 구독을 못 찾으면 안전하게 비움
+      window.userProfile.push_subs = list;
+      window.userProfile.push_optin = list.length > 0;
+      if (typeof window.saveProfileToServer === 'function') await window.saveProfileToServer();
+      if (typeof showToast === 'function') showToast(list.length > 0 ? '이 기기에서 푸시를 껐어요 (다른 기기는 유지)' : '브라우저 푸시를 껐어요');
+      return;
     }
     if (typeof showToast === 'function') showToast('브라우저 푸시를 껐어요');
   }
@@ -7117,14 +7138,30 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     paintNotifToggles();
   }
 
+  async function getThisPushEndpoint() {
+    try {
+      if (!('serviceWorker' in navigator)) return null;
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) return null;
+      const sub = await reg.pushManager.getSubscription();
+      return sub ? sub.endpoint : null;
+    } catch (e) { return null; }
+  }
   let _notifDraft = null;
-  window.openNotifSettings = function() {
+  window.openNotifSettings = async function() {
     _notifDraft = loadNotifPrefs();
     _notifDraft._loggedIn = !!(window.getPinhomeUser && window.getPinhomeUser());
     _notifDraft.email = !!(window.userProfile && window.userProfile.email_optin);
     _notifDraft.push = !!(window.userProfile && window.userProfile.push_optin);
     paintNotifToggles();
     openModal('Notif');
+    // 이 기기가 실제로 구독돼 있는지로 푸시 토글 보정(여러 기기 지원)
+    try {
+      const ep = await getThisPushEndpoint();
+      const subs = (window.userProfile && Array.isArray(window.userProfile.push_subs)) ? window.userProfile.push_subs : [];
+      _notifDraft.push = !!(ep && subs.some(s => s && s.endpoint === ep));
+      paintNotifToggles();
+    } catch (e) {}
   };
   function paintNotifToggles() {
     ['master', 'expiring', 'eligibility', 'newmatch', 'email', 'push'].forEach(k => {
