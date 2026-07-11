@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.64 (자격까지 남은 조건 안내)</title>
+<title>PinHome · v0.65 (신청 진행 상태 트래커)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1476,6 +1476,15 @@
   .gap-item i{color:var(--em-text);font-size:15px;margin-top:1px;flex-shrink:0;}
   .gap-item.gap-blocked i{color:var(--ink-hint);}
   .gap-item.gap-time i,.gap-item.gap-income i{color:var(--warn);}
+  .aps-card{background:var(--surface);border:1px solid var(--em-line);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .aps-head{font-size:14px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:7px;}
+  .aps-desc{font-size:12px;color:var(--ink-soft);margin:4px 0 12px;line-height:1.5;}
+  .aps-chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .aps-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .aps-chip i{font-size:15px;}
+  .aps-chip.on{background:var(--em-soft);border-color:var(--em-line);color:var(--em-text);}
+  .aps-badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:800;background:var(--em-soft);color:var(--em-text);}
+  .aps-badge.aps-applied{background:var(--warn-soft);color:var(--warn);}
   .detail-warn {
     background: var(--warn-soft);
     border-left: 2px solid var(--warn);
@@ -2554,7 +2563,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
   </section>
 
   <!-- ============================================ -->
@@ -2663,7 +2672,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
   </section>
 
   <!-- ============================================ -->
@@ -2712,7 +2721,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
   </section>
 
   <!-- ============================================ -->
@@ -2741,7 +2750,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
   </section>
 
 </div>
@@ -6475,6 +6484,10 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     }
     if (policy.display_amount && policy.display_amount.type === 'grant') amtUnit = '지원금';
 
+    // 진행 상태 배지
+    const aps = applyStatusMeta(result.policy_id);
+    const apsBadge = aps ? ` · <span class="aps-badge aps-${aps.key}">${aps.label}</span>` : '';
+
     // 상태 라벨
     let statusLabel = '';
     let statusClass = '';
@@ -6496,7 +6509,7 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
         <div class="row-body">
           <div class="row-cat">${cat} · ${policy.source_org}</div>
           <div class="row-title">${policy.title}<span class="row-status">${statusLabel}</span>${deadlineBadge(policy)}</div>
-          <div class="row-desc">${savedText}</div>
+          <div class="row-desc">${savedText}${apsBadge}</div>
         </div>
         <div class="row-amt">
           <div class="row-amt-num">${amtNum}</div>
@@ -7193,6 +7206,35 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     if (card) { const done = p.required_documents.filter(d => all[policyId][d]).length; const prog = card.querySelector('.doc-progress'); if (prog) prog.textContent = done + ' / ' + p.required_documents.length + ' 준비'; }
   };
 
+  // ★ v0.65 — 신청 진행 상태 트래커 (기기에 저장 localStorage)
+  const APPLY_STAGES = [['interested','관심','ti-star'],['preparing','준비중','ti-clipboard-list'],['applied','신청함','ti-send'],['done','완료','ti-circle-check']];
+  function loadAllApplyStatus(){ try { return JSON.parse(localStorage.getItem('pinhome_apply_status') || '{}') || {}; } catch(e){ return {}; } }
+  function saveAllApplyStatus(o){ try { localStorage.setItem('pinhome_apply_status', JSON.stringify(o)); } catch(e){} }
+  function getApplyStatus(pid){ return loadAllApplyStatus()[pid] || null; }
+  function applyStatusMeta(pid){ const k = getApplyStatus(pid); if(!k) return null; const s = APPLY_STAGES.find(x => x[0] === k); return s ? { key:k, label:s[1], icon:s[2] } : null; }
+
+  function applyStatusBlock(policy){
+    const cur = getApplyStatus(policy.id);
+    const chips = APPLY_STAGES.map(([key,label,icon]) => {
+      const on = cur === key;
+      return '<button class="aps-chip' + (on ? ' on' : '') + '" onclick="setApplyStatus(\'' + policy.id + '\',\'' + key + '\')"><i class="ti ' + icon + '"></i>' + label + '</button>';
+    }).join('');
+    return '<div class="aps-card">'
+      + '<div class="aps-head"><i class="ti ti-progress"></i> 신청 진행 상태</div>'
+      + '<div class="aps-desc">이 정책을 어디까지 진행했는지 표시해두세요 (같은 걸 다시 누르면 해제)</div>'
+      + '<div class="aps-chips">' + chips + '</div>'
+      + '</div>';
+  }
+
+  window.setApplyStatus = function(policyId, key){
+    const all = loadAllApplyStatus();
+    if (all[policyId] === key) delete all[policyId];   // 같은 단계 다시 누르면 해제
+    else all[policyId] = key;
+    saveAllApplyStatus(all);
+    if (window.openDetail) window.openDetail(policyId);   // 상세 갱신
+    if (typeof window.renderFavoritesPage === 'function') { try { window.renderFavoritesPage(); } catch(e){} }
+  };
+
   function renderDetailHTML(policy, result) {
     // 상태 라벨
     let statusBlock = '';
@@ -7353,6 +7395,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
       ${reqRulesBlock}
       ${bonusRulesBlock}
       ${bonusAppliedBlock}
+
+      ${applyStatusBlock(policy)}
 
       ${reminderBlock(policy)}
 
