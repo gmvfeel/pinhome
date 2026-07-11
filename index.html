@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.65 (신청 진행 상태 트래커)</title>
+<title>PinHome · v0.66 (부동산 계산기)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1485,6 +1485,25 @@
   .aps-chip.on{background:var(--em-soft);border-color:var(--em-line);color:var(--em-text);}
   .aps-badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:800;background:var(--em-soft);color:var(--em-text);}
   .aps-badge.aps-applied{background:var(--warn-soft);color:var(--warn);}
+  .calc-wrap{max-width:560px;margin:0 auto;padding:8px 0 40px;}
+  .calc-title{font-size:22px;font-weight:800;color:var(--ink);margin-bottom:16px;}
+  .calc-tabs{display:flex;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px;margin-bottom:18px;}
+  .calc-tab{flex:1;padding:10px;border:none;background:none;border-radius:7px;font-size:14px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit;}
+  .calc-tab.on{background:var(--surface-2);color:var(--ink);}
+  .calc-field{margin-bottom:14px;}
+  .calc-field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;}
+  .calc-field input,.calc-field select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .calc-field input:focus,.calc-field select:focus{outline:none;border-color:var(--em);}
+  .calc-result{background:var(--surface);border:1px solid var(--em-line);border-radius:14px;padding:18px;margin-top:6px;}
+  .calc-rrow{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-top:1px solid var(--line);gap:12px;}
+  .calc-rrow:first-child{border-top:none;}
+  .calc-rrow .k{font-size:13px;color:var(--ink-soft);}
+  .calc-rrow .v{font-size:16px;font-weight:800;color:var(--ink);text-align:right;}
+  .calc-rrow.main .v{font-size:22px;color:var(--em-text);}
+  .calc-score-total{text-align:center;padding:6px 0 12px;}
+  .calc-score-num{font-size:42px;font-weight:800;color:var(--em-text);}
+  .calc-score-max{font-size:16px;color:var(--ink-hint);}
+  .calc-note{font-size:12px;color:var(--ink-hint);margin-top:14px;line-height:1.6;}
   .detail-warn {
     background: var(--warn-soft);
     border-left: 2px solid var(--warn);
@@ -2323,6 +2342,7 @@
       <button class="nav-item on" data-screen="dash">대시보드</button>
       <button class="nav-item" data-screen="check">간편 확인</button>
       <button class="nav-item" data-screen="result">결과</button>
+      <button class="nav-item" data-screen="calc">계산기</button>
       <button class="nav-item nav-hidden" data-screen="mypage">마이</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -2563,7 +2583,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
   </section>
 
   <!-- ============================================ -->
@@ -2672,7 +2692,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
   </section>
 
   <!-- ============================================ -->
@@ -2721,7 +2741,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
   </section>
 
   <!-- ============================================ -->
@@ -2750,7 +2770,41 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.65</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
+  </section>
+
+  <!-- ★ v0.66 — 부동산 계산기 화면 -->
+  <section class="screen" id="screen-calc">
+    <div class="calc-wrap">
+      <h1 class="calc-title">부동산 계산기</h1>
+      <div class="calc-tabs">
+        <button class="calc-tab on" data-calc="loan" onclick="switchCalc('loan')">월 상환액</button>
+        <button class="calc-tab" data-calc="score" onclick="switchCalc('score')">청약 가점</button>
+      </div>
+
+      <div class="calc-panel" id="calcLoan">
+        <div class="calc-field"><label for="loanAmt">대출 금액 (만원)</label><input type="number" id="loanAmt" value="30000" inputmode="numeric" oninput="calcLoan()"></div>
+        <div class="calc-field"><label for="loanRate">연 이자율 (%)</label><input type="number" id="loanRate" value="3.5" step="0.1" inputmode="decimal" oninput="calcLoan()"></div>
+        <div class="calc-field"><label for="loanYears">상환 기간 (년)</label><input type="number" id="loanYears" value="30" inputmode="numeric" oninput="calcLoan()"></div>
+        <div class="calc-field"><label for="loanType">상환 방식</label>
+          <select id="loanType" onchange="calcLoan()">
+            <option value="equal_total">원리금 균등 (매달 같은 금액)</option>
+            <option value="equal_principal">원금 균등 (매달 조금씩 줄어듦)</option>
+          </select>
+        </div>
+        <div class="calc-result" id="loanResult"></div>
+      </div>
+
+      <div class="calc-panel" id="calcScore" style="display:none">
+        <div class="calc-field"><label for="scYears">무주택 기간 (년)</label><input type="number" id="scYears" value="5" inputmode="numeric" oninput="calcScore()"></div>
+        <div class="calc-field"><label for="scDeps">부양가족 수 (명, 본인 제외)</label><input type="number" id="scDeps" value="2" inputmode="numeric" oninput="calcScore()"></div>
+        <div class="calc-field"><label for="scBank">청약통장 가입 기간 (년)</label><input type="number" id="scBank" value="5" inputmode="numeric" oninput="calcScore()"></div>
+        <div class="calc-result" id="scoreResult"></div>
+      </div>
+
+      <div class="calc-note">참고용 추정치예요. 실제 상환액·가점은 금융기관과 청약 기준에 따라 달라질 수 있어요. 무주택 기간은 보통 만 30세(또는 혼인)부터 산정돼요.</div>
+    </div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.66</div>
   </section>
 
 </div>
@@ -2762,11 +2816,62 @@
   <button class="mob-nav-item on" data-screen="dash"><i class="ti ti-layout-dashboard"></i><span>대시보드</span></button>
   <button class="mob-nav-item" data-screen="check"><i class="ti ti-bolt"></i><span>확인</span></button>
   <button class="mob-nav-item" data-screen="result"><i class="ti ti-circle-check"></i><span>결과</span></button>
+  <button class="mob-nav-item" data-screen="calc"><i class="ti ti-calculator"></i><span>계산기</span></button>
   <button class="mob-nav-item nav-hidden" data-screen="mypage"><i class="ti ti-user"></i><span>마이</span></button>
 </nav>
 
 <!-- 위로가기 -->
 <button class="to-top" id="toTop" aria-label="맨 위로" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="ti ti-arrow-up"></i></button>
+<script>
+  // ★ v0.66 — 부동산 계산기
+  window.switchCalc = function(which){
+    document.querySelectorAll('.calc-tab').forEach(t => t.classList.toggle('on', t.dataset.calc === which));
+    var l = document.getElementById('calcLoan'), s = document.getElementById('calcScore');
+    if (l) l.style.display = which === 'loan' ? '' : 'none';
+    if (s) s.style.display = which === 'score' ? '' : 'none';
+    if (which === 'loan') window.calcLoan(); else window.calcScore();
+  };
+
+  window.calcLoan = function(){
+    var el = document.getElementById('loanResult'); if(!el) return;
+    var amtMan = parseFloat((document.getElementById('loanAmt')||{}).value) || 0;
+    var rate = parseFloat((document.getElementById('loanRate')||{}).value) || 0;
+    var years = parseFloat((document.getElementById('loanYears')||{}).value) || 0;
+    var type = (document.getElementById('loanType')||{}).value || 'equal_total';
+    var P = amtMan * 10000, n = Math.round(years * 12), r = rate / 100 / 12;
+    if (P <= 0 || n <= 0) { el.innerHTML = '<div class="calc-rrow"><span class="k">금액과 기간을 입력해주세요</span></div>'; return; }
+    var won = function(v){ return Math.round(v).toLocaleString('ko-KR') + '원'; };
+    var eokman = function(v){ v = Math.round(v); var eok = Math.floor(v/100000000), man = Math.round((v%100000000)/10000); var s=''; if(eok>0) s+=eok+'억 '; if(man>0) s+=man.toLocaleString('ko-KR')+'만'; s = s.trim(); return s ? s+'원' : v.toLocaleString('ko-KR')+'원'; };
+    if (type === 'equal_total') {
+      var monthly = r > 0 ? P * r / (1 - Math.pow(1 + r, -n)) : P / n;
+      var interest = monthly * n - P;
+      el.innerHTML = '<div class="calc-rrow main"><span class="k">매달 상환액</span><span class="v">' + won(monthly) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">총 이자</span><span class="v">' + eokman(interest) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">총 상환액</span><span class="v">' + eokman(P + interest) + '</span></div>';
+    } else {
+      var principal = P / n, first = principal + P * r, last = principal + principal * r, tot = r * P * (n + 1) / 2;
+      el.innerHTML = '<div class="calc-rrow main"><span class="k">첫 달 상환액</span><span class="v">' + won(first) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">마지막 달 상환액</span><span class="v">' + won(last) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">총 이자</span><span class="v">' + eokman(tot) + '</span></div>'
+        + '<div class="calc-rrow"><span class="k">총 상환액</span><span class="v">' + eokman(P + tot) + '</span></div>';
+    }
+  };
+
+  window.calcScore = function(){
+    var el = document.getElementById('scoreResult'); if(!el) return;
+    var y = Math.max(0, parseFloat((document.getElementById('scYears')||{}).value) || 0);
+    var d = Math.max(0, parseInt((document.getElementById('scDeps')||{}).value, 10) || 0);
+    var b = Math.max(0, parseFloat((document.getElementById('scBank')||{}).value) || 0);
+    var noHouse = y < 1 ? 2 : Math.min(32, 2 + Math.floor(y) * 2);
+    var deps = Math.min(35, 5 + d * 5);
+    var bank = b < 0.5 ? 1 : Math.min(17, 2 + Math.floor(b));
+    var total = noHouse + deps + bank;
+    el.innerHTML = '<div class="calc-score-total"><span class="calc-score-num">' + total + '</span><span class="calc-score-max"> / 84점</span></div>'
+      + '<div class="calc-rrow"><span class="k">무주택 기간 (최대 32점)</span><span class="v">' + noHouse + '점</span></div>'
+      + '<div class="calc-rrow"><span class="k">부양가족 수 (최대 35점)</span><span class="v">' + deps + '점</span></div>'
+      + '<div class="calc-rrow"><span class="k">청약통장 기간 (최대 17점)</span><span class="v">' + bank + '점</span></div>';
+  };
+</script>
 <script>
   (function(){
     var btn = document.getElementById('toTop');
@@ -2778,7 +2883,7 @@
 </script>
 
 <script>
-  const screens = ['dash', 'check', 'result', 'detail', 'mypage', 'compare'];
+  const screens = ['dash', 'check', 'result', 'detail', 'mypage', 'compare', 'calc'];
   let navStack = [];
   let currentScreen = 'dash';
   function go(name, isBack) {
@@ -2810,6 +2915,11 @@
     // 간편확인 화면 진입 시 저장된 값으로 복원
     if (name === 'check' && typeof window.prefillCheckScreen === 'function') {
       window.prefillCheckScreen();
+    }
+    // 계산기 화면 진입 시 초기 계산
+    if (name === 'calc') {
+      if (typeof window.calcLoan === 'function') window.calcLoan();
+      if (typeof window.calcScore === 'function') window.calcScore();
     }
   }
   // 뒤로 가기: 직전 화면으로
