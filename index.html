@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.63 (카카오 닉네임 스코프 명시)</title>
+<title>PinHome · v0.64 (자격까지 남은 조건 안내)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -1467,6 +1467,15 @@
     color: var(--ink-soft);
     line-height: 1.85;
   }
+  .gap-card{background:var(--surface);border:1px solid var(--em-line);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .gap-card.soon{border-color:var(--warn);background:var(--warn-soft);}
+  .gap-head{font-size:15px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:7px;}
+  .gap-card.soon .gap-head{color:var(--warn);}
+  .gap-sub{font-size:12.5px;color:var(--ink-soft);margin:4px 0 10px;line-height:1.5;}
+  .gap-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink);line-height:1.5;}
+  .gap-item i{color:var(--em-text);font-size:15px;margin-top:1px;flex-shrink:0;}
+  .gap-item.gap-blocked i{color:var(--ink-hint);}
+  .gap-item.gap-time i,.gap-item.gap-income i{color:var(--warn);}
   .detail-warn {
     background: var(--warn-soft);
     border-left: 2px solid var(--warn);
@@ -2545,7 +2554,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
   </section>
 
   <!-- ============================================ -->
@@ -2654,7 +2663,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
   </section>
 
   <!-- ============================================ -->
@@ -2703,7 +2712,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
   </section>
 
   <!-- ============================================ -->
@@ -2732,7 +2741,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.64</div>
   </section>
 
 </div>
@@ -4149,6 +4158,63 @@
     }
     if (candidates.length === 0) return null;
     return candidates.reduce((a, b) => a.months > b.months ? a : b);
+  };
+
+  // 자격까지 남은/막힌 조건을 사람이 읽기 쉬운 안내로 변환
+  M.buildEligibilityGaps = function(policy, result, user, refs) {
+    refs = refs || (window.PinHomeRefs || M.DEFAULT_REFS);
+    const gaps = [];
+    const rrs = result.rule_results || [];
+    for (let i = 0; i < policy.rules.length; i++) {
+      const rule = policy.rules[i];
+      const rr = rrs[i];
+      if (!rule || !rule.required || !rr || rr.matched) continue;
+      const params = (M.resolveRuleParams(rule, user).params) || {};
+      const t = rule.type;
+      if (t === 'age') {
+        const min = params.min || 0, max = params.max || 999, age = user.age;
+        if (age < min) gaps.push({ icon: 'ti-cake', kind: 'time', text: `만 ${min}세부터 대상이에요 — 약 ${min - age}년 뒤 자격이 생겨요` });
+        else if (age > max) gaps.push({ icon: 'ti-cake', kind: 'blocked', text: `만 ${max}세 이하가 대상이라, 나이 조건은 이미 지났어요` });
+        else gaps.push({ icon: 'ti-cake', kind: 'info', text: '나이 조건을 확인해보세요' });
+      } else if (t === 'income_household') {
+        const scope = params.scope || 'household';
+        const income = M.getUserIncomeByScope(user, scope);
+        const threshold = M.resolveIncomeThreshold(params, user, refs);
+        if (income == null) gaps.push({ icon: 'ti-coin', kind: 'info', text: '소득을 입력하면 자격 여부를 정확히 알려드려요' });
+        else if (threshold != null && income > threshold) {
+          const diff = Math.max(1, Math.round((income - threshold) / 10000));
+          gaps.push({ icon: 'ti-coin', kind: 'income', text: `소득이 기준보다 약 ${diff}만원 높아요 — 기준(${Math.round(threshold / 10000)}만원) 이하면 자격이 생겨요` });
+        } else gaps.push({ icon: 'ti-coin', kind: 'info', text: '소득 조건을 확인해보세요' });
+      } else if (t === 'housing') {
+        const req = params.status || 'any';
+        if (req === 'homeless') {
+          if (user.housing_status == null) gaps.push({ icon: 'ti-home', kind: 'info', text: '무주택 여부를 입력하면 알려드려요' });
+          else if (user.housing_status !== 'homeless') gaps.push({ icon: 'ti-home', kind: 'blocked', text: '무주택 세대가 대상이에요 (현재 주택 보유 중)' });
+          else {
+            const minY = params.min_homeless_years || 0, y = user.homeless_years || 0;
+            if (minY > 0 && y < minY) gaps.push({ icon: 'ti-home', kind: 'time', text: `무주택 기간이 약 ${Math.max(1, Math.ceil(minY - y))}년 더 지나면 자격이 생겨요` });
+            else gaps.push({ icon: 'ti-home', kind: 'info', text: '무주택 조건을 확인해보세요' });
+          }
+        } else if (req === 'owner_1') gaps.push({ icon: 'ti-home', kind: 'blocked', text: '1주택 보유 세대가 대상이에요' });
+      } else if (t === 'children') {
+        const min = params.min_count, count = (user.children && user.children.count) || 0;
+        if (min && count < min) {
+          if (params.include_pregnancy && user.children && user.children.pregnant) gaps.push({ icon: 'ti-baby-carriage', kind: 'time', text: '출산하시면 자격이 생겨요' });
+          else gaps.push({ icon: 'ti-baby-carriage', kind: 'info', text: `자녀가 ${min}명 이상일 때 대상이에요 (현재 ${count}명)` });
+        } else gaps.push({ icon: 'ti-baby-carriage', kind: 'info', text: '자녀 조건을 확인해보세요' });
+      } else if (t === 'marriage') {
+        gaps.push({ icon: 'ti-heart', kind: 'blocked', text: '혼인(또는 예비부부)일 때 대상이에요' });
+      } else if (t === 'first_buyer') {
+        gaps.push({ icon: 'ti-key', kind: 'blocked', text: '생애 첫 주택 구입자가 대상이에요' });
+      } else if (t === 'parent_support') {
+        gaps.push({ icon: 'ti-users', kind: 'info', text: '노부모 부양 세대가 대상이에요' });
+      } else if (t === 'household_status') {
+        gaps.push({ icon: 'ti-users', kind: 'info', text: '가구 형태 조건이 있어요' });
+      } else if (rr.reason) {
+        gaps.push({ icon: 'ti-info-circle', kind: 'info', text: rr.reason });
+      }
+    }
+    return gaps;
   };
 
   // Step 6: 한도/금리
@@ -7240,6 +7306,21 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     // 점수 색깔
     const scoreColor = result.status === 'now' ? 'var(--em-text)' : result.status === 'soon' ? 'var(--warn)' : 'var(--ink-hint)';
 
+    // 자격까지 남은/막힌 조건 안내 패널
+    let gapBlock = '';
+    if ((result.status === 'soon' || result.status === 'no') && result.excluded_by !== 'region') {
+      try {
+        const gaps = window.PinHomeMatcher.buildEligibilityGaps(policy, result, buildMatchUser(), window.PinHomeRefs);
+        if (gaps.length) {
+          const soon = result.status === 'soon';
+          const head = soon ? '자격까지 거의 다 왔어요' : '이 조건들을 확인해보세요';
+          const sub = soon ? '아래 조건만 충족되면 신청할 수 있어요.' : '아래 조건 때문에 아직 대상이 아니에요.';
+          const items = gaps.map(g => `<div class="gap-item gap-${g.kind}"><i class="ti ${g.icon}"></i><span>${g.text}</span></div>`).join('');
+          gapBlock = `<div class="gap-card ${soon ? 'soon' : 'no'}"><div class="gap-head"><i class="ti ti-flag"></i>${head}</div><div class="gap-sub">${sub}</div>${items}</div>`;
+        }
+      } catch (e) { gapBlock = ''; }
+    }
+
     return `
       <div class="detail-header">
         ${statusBlock}
@@ -7266,6 +7347,8 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
           <div class="detail-stat-value" style="font-size:18px">${Math.round(result.base_score)} <span style="color:var(--em-text);font-size:14px">+${Math.round(result.bonus_score)}</span></div>
         </div>
       </div>
+
+      ${gapBlock}
 
       ${reqRulesBlock}
       ${bonusRulesBlock}
