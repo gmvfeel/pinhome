@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="PinHome" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<title>PinHome · v0.62 (카카오 이메일 스코프 제거)</title>
+<title>PinHome · v0.63 (카카오 닉네임 스코프 명시)</title>
 <!-- ★ v0.33 — 파비콘 (에메랄드 핀 마크, 별도 파일 없이 코드에 내장) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3QgeD0nMycgeT0nMycgd2lkdGg9JzI2JyBoZWlnaHQ9JzI2JyByeD0nOCcgZmlsbD0nIzAwRDlBMycvPjxjaXJjbGUgY3g9JzE2JyBjeT0nMTYnIHI9JzUuNScgZmlsbD0nIzBBMEUxQScvPjwvc3ZnPg==" />
@@ -2545,7 +2545,7 @@
       <div class="sheet" id="policyListBrowse"></div>
     </div>
 
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.62</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
   </section>
 
   <!-- ============================================ -->
@@ -2654,7 +2654,7 @@
         <button class="btn primary" onclick="go('detail')">정책 상세 →</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.62</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
   </section>
 
   <!-- ============================================ -->
@@ -2703,7 +2703,7 @@
         <button class="btn" onclick="openNotifSettings()">알림 설정</button>
       </div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.62</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
   </section>
 
   <!-- ============================================ -->
@@ -2732,7 +2732,7 @@
       <!-- 비교 결과 영역 -->
       <div id="compareResult" style="display:none"></div>
     </div>
-    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.62</div>
+    <div class="footer">© 2026 PinHome · Alliance WXN ㈜윅슨어소시에이츠. All rights reserved. · v0.63</div>
   </section>
 
 </div>
@@ -7516,7 +7516,9 @@ window.PinHomeNormalizeIncomeRules(window.PinHomePolicies);
     try {
       const redirectTo = location.origin + location.pathname;
       const opts = { redirectTo };
-      // 카카오는 개인 개발자 앱에서 이메일 권한을 못 받아요 → 이메일 스코프 요청 안 함(닉네임만).
+      // 카카오: 개인 개발자 앱은 이메일 권한이 없어요.
+      // scopes를 닉네임으로 '명시'해서 Supabase가 이메일(account_email)을 요청하지 않도록 함 → KOE205 방지.
+      if (provider === 'kakao') opts.scopes = 'profile_nickname';
       const { error } = await pinhomeSb.auth.signInWithOAuth({ provider, options: opts });
       if (error) { if (msg) { msg.classList.add('err'); msg.textContent = translateAuthError(error.message); } }
       // 성공 시 페이지가 provider로 이동했다가 로그인 후 앱으로 되돌아와요 (세션은 자동 처리).
